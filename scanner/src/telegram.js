@@ -17,9 +17,16 @@ export async function callTelegram(method, body = {}) {
   return json.result;
 }
 
+// Chat que recebe as mensagens: o ativado pelo /start no bot (settings/bot)
+// ou, enquanto ninguém ativou, o TELEGRAM_CHAT_ID do .env / GitHub.
+let activeChatId = null;
+export const setChatId = (id) => {
+  activeChatId = id;
+};
+
 export async function sendMessage(text) {
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (!chatId) throw new Error('TELEGRAM_CHAT_ID não definido.');
+  const chatId = activeChatId || process.env.TELEGRAM_CHAT_ID;
+  if (!chatId) throw new Error('Nenhum chat do Telegram configurado.');
   return callTelegram('sendMessage', {
     chat_id: chatId,
     text,

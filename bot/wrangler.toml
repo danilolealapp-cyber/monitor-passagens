@@ -1,0 +1,15 @@
+name = "monitor-passagens-bot"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+# Relatório diário: confere a cada 15 minutos se é hora de enviar
+[triggers]
+crons = ["*/15 * * * *"]
+
+[vars]
+GH_REPO = "danilolealapp-cyber/monitor-passagens"
+GEMINI_MODEL = "gemini-flash-latest"
+
+# Chaves secretas (cadastradas pela publicação automática do GitHub):
+# TELEGRAM_BOT_TOKEN, FIREBASE_SERVICE_ACCOUNT, ACTIVATION_CODE, GEMINI_API_KEY
+# Opcional, para o /buscar: GH_TOKEN

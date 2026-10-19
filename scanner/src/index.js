@@ -5,7 +5,7 @@ import { db, Timestamp } from './firestore.js';
 import * as googleFlights from './googleflights.js';
 import * as travelpayouts from './travelpayouts.js';
 import { evaluate, shouldAlert } from './analysis.js';
-import { sendMessage, brl, dayMonth, escapeHtml } from './telegram.js';
+import { sendMessage, setChatId, brl, dayMonth, escapeHtml } from './telegram.js';
 
 const HISTORY_DAYS = 30;
 const DEFAULT_THRESHOLD = 0.3;
@@ -25,7 +25,7 @@ function alertMessage(route, best, ev) {
     '',
     `💰 <b>${brl(best.price)}</b> (usual: ${brl(ev.baseline)})`,
     `🗓 ${offerLine(best)}`,
-    best.link ? `🔗 <a href="${best.link}">Ver passagem</a>` : '',
+    best.link ? `🔗 <a href="${escapeHtml(best.link)}">Ver passagem</a>` : '',
     '',
     '<i>Preços mudam rápido. Confira antes de comprar.</i>',
   ]
@@ -110,6 +110,12 @@ async function scanRoute(doc, now) {
 
 async function main() {
   const now = new Date();
+
+  // Preferências definidas pelo bot do Telegram (/start, /silenciar)
+  const settings = (await db.doc('settings/bot').get()).data() ?? {};
+  if (settings.chatId) setChatId(settings.chatId);
+  const wantsReport = sendReport && settings.scanReports !== false;
+
   const routes = await db.collection('routes').where('active', '==', true).get();
 
   if (routes.empty) {
@@ -132,7 +138,7 @@ async function main() {
     }
   }
 
-  if (sendReport) {
+  if (wantsReport) {
     const hour = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
     const date = now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
     await sendMessage([`📊 <b>Relatório de passagens</b> · ${date} ${hour}`, '', blocks.join('\n\n')].join('\n'));
