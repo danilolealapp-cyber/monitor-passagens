@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
-import { AIRPORTS, cityName } from '../lib/airports';
 import { createRoute, updateRoute, MAX_ACTIVE_ROUTES } from '../lib/data';
+import AirportPicker from './AirportPicker';
 
 const DAY_MS = 86_400_000;
 const today = () => new Date().toISOString().slice(0, 10);
 const daysBetween = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / DAY_MS);
 
 function validate(f) {
-  if (!/^[A-Z]{3}$/.test(f.destination)) return 'Escolha um destino da lista ou digite o código do aeroporto (3 letras).';
+  if (!/^[A-Z]{3}$/.test(f.destination)) return 'Escolha o destino na lista de sugestões.';
   if (f.destination === 'BSB') return 'O destino precisa ser diferente de Brasília.';
   if (!f.departFrom || !f.departTo) return 'Preencha as duas datas.';
   if (f.departTo < today()) return 'O período precisa estar no futuro.';
@@ -27,6 +27,8 @@ export default function RouteForm({ route, canActivate, onClose }) {
   const [saving, setSaving] = useState(false);
   const [f, setF] = useState(() => ({
     destination: route?.destination ?? '',
+    name: route?.name ?? '',
+    country: route?.country ?? '',
     departFrom: route?.departFrom ?? '',
     departTo: route?.departTo ?? '',
     minNights: route?.minNights ?? 7,
@@ -40,13 +42,12 @@ export default function RouteForm({ route, canActivate, onClose }) {
 
   const set = (key) => (e) => {
     const raw = e.target.value;
-    const value = ['minNights', 'maxNights', 'threshold'].includes(key)
-      ? Number(raw)
-      : key === 'destination'
-        ? raw.toUpperCase().slice(0, 3)
-        : raw;
+    const value = ['minNights', 'maxNights', 'threshold'].includes(key) ? Number(raw) : raw;
     setF((prev) => ({ ...prev, [key]: value }));
   };
+
+  const pickAirport = (a) =>
+    setF((prev) => ({ ...prev, destination: a.code, name: a.city, country: a.countryName }));
 
   async function submit(e) {
     e.preventDefault();
@@ -56,7 +57,8 @@ export default function RouteForm({ route, canActivate, onClose }) {
 
     const fields = {
       destination: f.destination,
-      name: cityName(f.destination),
+      name: f.name || f.destination,
+      country: f.country,
       departFrom: f.departFrom,
       departTo: f.departTo,
       minNights: f.minNights,
@@ -89,7 +91,7 @@ export default function RouteForm({ route, canActivate, onClose }) {
     <dialog
       ref={dialog}
       onClose={onClose}
-      className="m-auto w-[min(100%-2rem,32rem)] rounded-2xl bg-surface p-0 text-ink shadow-2xl"
+      className="m-auto w-[min(100%-2rem,32rem)] overflow-visible rounded-2xl bg-surface p-0 text-ink shadow-2xl"
     >
       <form onSubmit={submit} noValidate className="p-6">
         <div className="flex items-start justify-between gap-4">
@@ -105,25 +107,9 @@ export default function RouteForm({ route, canActivate, onClose }) {
             <label htmlFor="destination" className={label}>
               Destino
             </label>
-            <input
-              id="destination"
-              list="airports"
-              value={f.destination}
-              onChange={set('destination')}
-              placeholder="Ex.: LIS"
-              autoComplete="off"
-              className={`${input} uppercase`}
-            />
-            <datalist id="airports">
-              {AIRPORTS.map(([code, city]) => (
-                <option key={code} value={code}>
-                  {city}
-                </option>
-              ))}
-            </datalist>
-            {f.destination.length === 3 && (
-              <p className="mt-1.5 text-sm text-muted">{cityName(f.destination)}</p>
-            )}
+            <div className="mt-1.5">
+              <AirportPicker id="destination" value={f.destination} onSelect={pickAirport} />
+            </div>
           </div>
 
           <fieldset>

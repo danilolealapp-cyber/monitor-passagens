@@ -74,6 +74,7 @@ export default function PriceChart({ history }) {
             strokeWidth={2}
             fill="url(#priceFill)"
             dot={false}
+            isAnimationActive={false}
             activeDot={{ r: 5, fill: 'var(--ipe)', stroke: 'var(--ink)' }}
           />
         </AreaChart>

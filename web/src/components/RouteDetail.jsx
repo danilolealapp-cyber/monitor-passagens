@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { ArrowLeft, ExternalLink, Pause, Pencil, Play, Trash2 } from 'lucide-react';
 import { deleteRoute, setRouteActive, useHistory } from '../lib/data';
 import { brl, longDate, shortDate, stopsLabel, timeAgo, toneStyles, verdict } from '../lib/format';
-import { cityName } from '../lib/airports';
 import PriceChart from './PriceChart';
 
 const PERIODS = [
@@ -17,7 +16,7 @@ export default function RouteDetail({ route, onEdit }) {
   const v = verdict(route);
   const latest = history?.at(-1);
   const updated = route.lastScanAt?.toDate?.();
-  const city = route.name || cityName(route.destination);
+  const city = route.name || route.destination;
 
   async function remove() {
     if (!confirm(`Excluir a rota para ${city}? O histórico de preços também será apagado.`)) return;
@@ -38,7 +37,8 @@ export default function RouteDetail({ route, onEdit }) {
             BSB <span className="text-muted">para</span> {route.destination}
           </h2>
           <p className="mt-2 text-lg text-muted">
-            {city}. Ida entre {longDate(route.departFrom)} e {longDate(route.departTo)}, de {route.minNights} a{' '}
+            {city}
+            {route.country ? `, ${route.country}` : ''}. Ida entre {longDate(route.departFrom)} e {longDate(route.departTo)}, de {route.minNights} a{' '}
             {route.maxNights} noites.
           </p>
         </div>
@@ -57,12 +57,12 @@ export default function RouteDetail({ route, onEdit }) {
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <section className="rounded-2xl bg-surface p-5 sm:p-6" aria-labelledby="historico">
+        <section className="card p-5 sm:p-6" aria-labelledby="historico">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h3 id="historico" className="text-lg font-bold">
               Histórico de preços
             </h3>
-            <div className="flex rounded-full bg-bg p-1" role="group" aria-label="Período do gráfico">
+            <div className="flex rounded-full bg-raised p-1" role="group" aria-label="Período do gráfico">
               {PERIODS.map(([value, label]) => (
                 <button
                   key={value}
@@ -83,7 +83,7 @@ export default function RouteDetail({ route, onEdit }) {
           </div>
         </section>
 
-        <aside className="rounded-2xl bg-sky p-5 text-sky-ink sm:p-6">
+        <aside className="rounded-2xl bg-stub p-5 text-sky-ink shadow-card sm:p-6">
           <p className="text-sm text-sky-muted">Menor preço agora</p>
           <p className="tnum mt-1 text-5xl font-extrabold tracking-tight">{brl(route.lastPrice)}</p>
           <p className={`mt-3 inline-block rounded-md px-2.5 py-1 text-sm font-medium ${toneStyles[v.tone]}`}>{v.text}</p>
@@ -104,7 +104,7 @@ export default function RouteDetail({ route, onEdit }) {
         </aside>
       </div>
 
-      <section className="mt-6 rounded-2xl bg-surface p-5 sm:p-6" aria-labelledby="datas">
+      <section className="card mt-6 p-5 sm:p-6" aria-labelledby="datas">
         <h3 id="datas" className="text-lg font-bold">
           Melhores datas da última varredura
         </h3>

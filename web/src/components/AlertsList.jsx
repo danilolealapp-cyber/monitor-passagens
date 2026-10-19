@@ -7,7 +7,7 @@ export default function AlertsList({ routes }) {
   const byId = Object.fromEntries(routes.map((r) => [r.id, r]));
 
   return (
-    <section aria-labelledby="alertas">
+    <section aria-labelledby="alertas" className="card self-start p-5">
       <h2 id="alertas" className="flex items-center gap-2 text-lg font-bold">
         <BellRing className="size-5 text-ipe" aria-hidden="true" />
         Alertas
@@ -16,15 +16,20 @@ export default function AlertsList({ routes }) {
       {alerts === null ? (
         <p className="mt-4 text-muted">Carregando…</p>
       ) : alerts.length === 0 ? (
-        <p className="mt-4 text-sm leading-relaxed text-muted">
-          Nenhum alerta ainda. Quando uma rota ficar bem abaixo do preço usual, o aviso aparece aqui e no Telegram.
-        </p>
+        <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted">
+          <p>Nenhum alerta ainda.</p>
+          <p>
+            Quando o preço de uma rota cair abaixo do usual no percentual que você escolheu, o aviso aparece aqui e
+            chega na hora pelo Telegram.
+          </p>
+          <p>O preço usual é calculado com as varreduras dos últimos 30 dias.</p>
+        </div>
       ) : (
         <ol className="mt-4 space-y-3">
           {alerts.map((a) => {
             const route = byId[a.routeId];
             return (
-              <li key={a.id} className="rounded-xl border-l-4 border-deal bg-surface px-4 py-3">
+              <li key={a.id} className="rounded-xl border-l-4 border-deal bg-raised px-4 py-3">
                 <div className="flex items-baseline justify-between gap-3">
                   <span className="font-bold">BSB para {route?.destination ?? '?'}</span>
                   <span className="text-xs text-muted">{timeAgo(a.createdAt?.toDate?.())}</span>

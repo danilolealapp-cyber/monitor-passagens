@@ -4,10 +4,12 @@
 :root {
   --bg: #eef2f7;
   --surface: #ffffff;
+  --raised: #f6f8fb;
   --ink: #14213d;
   --muted: #5b6b86;
-  --line: #d5dde8;
+  --line: #d9e0ea;
   --sky: #1b2a4a;
+  --stub: #1b2a4a;
   --sky-ink: #f4f7fb;
   --sky-muted: #a9b8d3;
   --ipe: #f2b705;
@@ -18,17 +20,20 @@
   --high-bg: #fbe9df;
   --warm: #7a5d00;
   --warm-bg: #fdf3d3;
+  --shadow: 0 1px 2px rgb(20 33 61 / 0.06), 0 12px 32px -16px rgb(20 33 61 / 0.28);
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0d1528;
-    --surface: #16213a;
+    --bg: #0b1222;
+    --surface: #131d33;
+    --raised: #1a2640;
     --ink: #e7edf6;
-    --muted: #9aa9c2;
-    --line: #26344f;
-    --sky: #0a1122;
+    --muted: #93a3bf;
+    --line: #24324d;
+    --sky: #080e1c;
+    --stub: #1e2c4d;
     --sky-ink: #e7edf6;
     --sky-muted: #8796b2;
     --deal: #47c995;
@@ -37,6 +42,7 @@
     --high-bg: #3a1f14;
     --warm: #f2c94c;
     --warm-bg: #3a300f;
+    --shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 16px 40px -20px rgb(0 0 0 / 0.7);
     color-scheme: dark;
   }
 }
@@ -44,10 +50,12 @@
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
+  --color-raised: var(--raised);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-sky: var(--sky);
+  --color-stub: var(--stub);
   --color-sky-ink: var(--sky-ink);
   --color-sky-muted: var(--sky-muted);
   --color-ipe: var(--ipe);
@@ -58,6 +66,7 @@
   --color-high-bg: var(--high-bg);
   --color-warm: var(--warm);
   --color-warm-bg: var(--warm-bg);
+  --shadow-card: var(--shadow);
   --font-sans: 'Schibsted Grotesk', system-ui, sans-serif;
 }
 
@@ -68,8 +77,10 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Números alinhados sem espaçar a pontuação */
 .tnum {
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: lining-nums;
+  font-feature-settings: 'lnum';
 }
 
 :focus-visible {
@@ -77,7 +88,7 @@ body {
   outline-offset: 2px;
 }
 
-/* Picote do cartão de embarque */
+/* Picote do cartão de embarque: meias-luas no topo e na base da linha tracejada */
 .ticket-cut {
   position: relative;
 }
@@ -85,27 +96,32 @@ body {
 .ticket-cut::after {
   content: '';
   position: absolute;
-  left: -9px;
-  width: 18px;
-  height: 18px;
+  left: -10px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: var(--bg);
+  z-index: 1;
 }
 .ticket-cut::before {
-  top: -9px;
+  top: -10px;
 }
 .ticket-cut::after {
-  bottom: -9px;
+  bottom: -10px;
 }
 
 @layer components {
   .btn-secondary {
     @apply inline-flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-2 text-sm font-semibold hover:border-muted;
   }
+  .card {
+    @apply rounded-2xl border border-line bg-surface shadow-card;
+  }
 }
 
 dialog::backdrop {
-  background: rgb(10 17 34 / 0.6);
+  background: rgb(8 14 28 / 0.65);
+  backdrop-filter: blur(2px);
 }
 
 @media (prefers-reduced-motion: reduce) {

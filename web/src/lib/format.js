@@ -3,10 +3,33 @@ export const brl = (value) =>
     ? '—'
     : value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
 
+const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
+// "2027-03-07" → "7 mar"
 export const dayMonth = (iso) => {
   const [, m, d] = iso.split('-');
-  return `${d}/${m}`;
+  return `${Number(d)} ${MONTHS[Number(m) - 1]}`;
 };
+
+// "2027-03-07" → "mar 2027"
+export const monthYear = (iso) => {
+  const [y, m] = iso.split('-');
+  return `${MONTHS[Number(m) - 1]} ${y}`;
+};
+
+// Período da ida: "7 mar a 31 mai"
+export const windowLabel = (from, to) => `${dayMonth(from)} a ${dayMonth(to)}`;
+
+// Situação das 3 varreduras de hoje (horário de Brasília)
+export function todayScans(now = new Date()) {
+  const brHour = ((now.getUTCHours() + 21) % 24) + now.getUTCMinutes() / 60;
+  const nextHour = SCAN_HOURS.find((h) => h > brHour);
+  // Depois das 20h, a próxima é a das 07h de amanhã
+  if (nextHour === undefined) {
+    return SCAN_HOURS.map((h, i) => ({ hour: h, done: i > 0, next: i === 0, tomorrow: i === 0 }));
+  }
+  return SCAN_HOURS.map((h) => ({ hour: h, done: h <= brHour, next: h === nextHour, tomorrow: false }));
+}
 
 export const longDate = (iso) =>
   new Date(`${iso}T12:00:00`).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' });
