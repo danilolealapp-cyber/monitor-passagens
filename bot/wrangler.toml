@@ -6,6 +6,10 @@ compatibility_date = "2026-09-01"
 [triggers]
 crons = ["*/15 * * * *"]
 
+# Registro de erros, visível no painel da Cloudflare (Workers → monitor-passagens-bot → Logs)
+[observability]
+enabled = true
+
 [vars]
 GH_REPO = "danilolealapp-cyber/monitor-passagens"
 GEMINI_MODEL = "gemini-flash-latest"

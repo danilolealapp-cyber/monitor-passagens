@@ -175,6 +175,19 @@ export default {
       return new Response('ok');
     }
 
+    // Diagnóstico temporário da IA: mostra a resposta ou o erro na tela
+    if (url.pathname === '/debug' && url.searchParams.get('key') === secret) {
+      const started = Date.now();
+      try {
+        const db = firestore(env);
+        const routes = await db.list('routes');
+        const text = await answer(env, db, routes, url.searchParams.get('q') || 'teste');
+        return Response.json({ ok: true, ms: Date.now() - started, text });
+      } catch (err) {
+        return Response.json({ ok: false, ms: Date.now() - started, error: err.message, stack: err.stack }, { status: 500 });
+      }
+    }
+
     if (url.pathname === '/setup') {
       if (url.searchParams.get('key') !== secret) return new Response('forbidden', { status: 403 });
       await telegram(env, 'setWebhook', {
