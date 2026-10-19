@@ -138,7 +138,13 @@ export async function searchRoundTrips(route, now = new Date()) {
   for (const trip of trips) {
     const full = { origin: route.origin, destination: route.destination, ...trip };
     try {
-      const flights = await fetchTrip(full);
+      let flights;
+      try {
+        flights = await fetchTrip(full);
+      } catch {
+        await sleep(DELAY_MS * 3); // segunda tentativa, com mais calma
+        flights = await fetchTrip(full);
+      }
       if (flights.length) {
         const cheapest = flights.reduce((a, b) => (b.price < a.price ? b : a));
         offers.push({
@@ -155,6 +161,10 @@ export async function searchRoundTrips(route, now = new Date()) {
     }
     await sleep(DELAY_MS);
   }
+
+  const empty = trips.length - failures - offers.length;
+  console.log(`  Google Flights: ${offers.length} com preço, ${empty} sem voos, ${failures} com erro (de ${trips.length} datas)`);
+  if (lastError) console.log(`  Último erro: ${lastError.message}`);
 
   if (trips.length && failures > trips.length / 2) throw lastError;
   return offers.sort((a, b) => a.price - b.price);
