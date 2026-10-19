@@ -110,7 +110,7 @@ export default function RouteForm({ route, canActivate, onClose }) {
       <form onSubmit={submit} noValidate className="p-6">
         <div className="flex items-start justify-between gap-4">
           <h2 className="text-2xl font-extrabold tracking-tight">{editing ? 'Editar rota' : 'Nova rota'}</h2>
-          <button type="button" onClick={onClose} className="-m-2 rounded-full p-2 text-muted hover:text-ink" aria-label="Fechar">
+          <button type="button" onClick={onClose} className="-m-2 rounded-lg p-2 text-muted hover:text-ink" aria-label="Fechar">
             <X className="size-5" aria-hidden="true" />
           </button>
         </div>
@@ -221,7 +221,7 @@ export default function RouteForm({ route, canActivate, onClose }) {
           <button
             type="submit"
             disabled={saving}
-            className="rounded-full bg-sky px-5 py-2.5 text-sm font-semibold text-sky-ink disabled:opacity-50"
+            className="rounded-xl bg-sky px-5 py-2.5 text-sm font-bold text-sky-ink disabled:opacity-50"
           >
             {saving ? 'Salvando…' : editing ? 'Salvar alterações' : 'Criar rota'}
           </button>

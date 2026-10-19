@@ -112,7 +112,7 @@ body {
 
 @layer components {
   .btn-secondary {
-    @apply inline-flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-2 text-sm font-semibold hover:border-muted;
+    @apply inline-flex items-center gap-2 rounded-xl border border-line bg-surface px-4 py-2 text-sm font-semibold hover:border-muted;
   }
   .card {
     @apply rounded-2xl border border-line bg-surface shadow-card;

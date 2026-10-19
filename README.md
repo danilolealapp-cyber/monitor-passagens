@@ -1,4 +1,4 @@
-# ✈️ Monitor de Passagens (BSB)
+# ✈️ Radar de Passagens
 
 Varre preços de passagens 3x por dia (07h, 13h, 20h), guarda o histórico no Firebase
 e avisa no Telegram quando um preço fica 30% ou mais abaixo do usual.

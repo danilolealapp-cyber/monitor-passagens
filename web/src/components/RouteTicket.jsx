@@ -50,7 +50,7 @@ export default function RouteTicket({ route }) {
           <div className="min-w-0">
             <p className="flex items-center gap-2 text-xs text-muted">
               Menor preço
-              <span className="inline-flex items-center gap-1 rounded-full bg-raised px-2 py-0.5 font-semibold text-ink">
+              <span className="inline-flex items-center gap-1 rounded-md bg-raised px-2 py-0.5 font-semibold text-ink">
                 {oneWay ? <ArrowRight className="size-3" aria-hidden="true" /> : <ArrowLeftRight className="size-3" aria-hidden="true" />}
                 {tripLabel(route)}
               </span>
@@ -66,7 +66,7 @@ export default function RouteTicket({ route }) {
             <Sparkline values={prices.slice(-21)} />
           </div>
           {!route.active && (
-            <span className="shrink-0 rounded-full border border-line px-3 py-1 text-xs font-medium text-muted">Pausada</span>
+            <span className="shrink-0 rounded-md border border-line px-2.5 py-1 text-xs font-medium text-muted">Pausada</span>
           )}
         </div>
 
@@ -98,7 +98,7 @@ export default function RouteTicket({ route }) {
               href={best.link}
               target="_blank"
               rel="noreferrer"
-              className="relative z-10 inline-flex shrink-0 items-center gap-1.5 rounded-full bg-raised px-3 py-1.5 text-sm font-semibold whitespace-nowrap text-ink hover:bg-line"
+              className="relative z-10 inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-raised px-3 py-1.5 text-sm font-semibold whitespace-nowrap text-ink hover:bg-line"
             >
               Ver voos <ExternalLink className="size-3.5" aria-hidden="true" />
             </a>

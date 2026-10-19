@@ -46,7 +46,7 @@ export default function RouteDetail({ route, routes = [], onEdit }) {
                     <a
                       href={`#/rota/${r.id}`}
                       aria-current={current ? 'page' : undefined}
-                      className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition ${
+                      className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm transition ${
                         current ? 'border-ink bg-ink font-semibold text-surface' : 'border-line bg-surface hover:border-muted'
                       } ${r.active ? '' : 'opacity-50'}`}
                     >
@@ -64,7 +64,7 @@ export default function RouteDetail({ route, routes = [], onEdit }) {
 
       <div className="mt-6 flex flex-wrap items-end justify-between gap-6">
         <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-ipe px-3 py-1 text-sm font-semibold text-ipe-ink">
+          <span className="inline-flex items-center gap-1.5 rounded-md bg-ipe px-2.5 py-1 text-sm font-bold text-ipe-ink">
             {oneWay ? <ArrowRight className="size-4" aria-hidden="true" /> : <ArrowLeftRight className="size-4" aria-hidden="true" />}
             {tripLabel(route)}
           </span>
@@ -97,14 +97,14 @@ export default function RouteDetail({ route, routes = [], onEdit }) {
             <h3 id="historico" className="text-lg font-bold">
               Histórico de preços
             </h3>
-            <div className="flex rounded-full bg-raised p-1" role="group" aria-label="Período do gráfico">
+            <div className="flex rounded-[10px] bg-raised p-1" role="group" aria-label="Período do gráfico">
               {PERIODS.map(([value, label]) => (
                 <button
                   key={value}
                   type="button"
                   onClick={() => setDays(value)}
                   aria-pressed={days === value}
-                  className={`rounded-full px-3 py-1 text-sm font-medium ${
+                  className={`rounded-md px-3 py-1 text-sm font-medium ${
                     days === value ? 'bg-sky text-sky-ink' : 'text-muted hover:text-ink'
                   }`}
                 >
@@ -159,7 +159,7 @@ export default function RouteDetail({ route, routes = [], onEdit }) {
                   href={route.lastBest.link}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-ipe px-4 py-2.5 text-sm font-semibold text-ipe-ink hover:brightness-105"
+                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-ipe px-4 py-2.5 text-sm font-bold text-ipe-ink hover:brightness-105"
                 >
                   Ver voos no Google Flights <ExternalLink className="size-4" aria-hidden="true" />
                 </a>

@@ -11,7 +11,7 @@ import { answer } from './ai.js';
 const SETTINGS = 'settings/bot';
 
 const HELP = [
-  '✈️ <b>Monitor de passagens</b>',
+  '✈️ <b>Radar de Passagens</b>',
   '',
   '/relatorio: preços atuais de todas as rotas',
   '/rotas: rotas monitoradas',
@@ -187,7 +187,7 @@ export default {
       return new Response('webhook configurado');
     }
 
-    return new Response('Monitor de passagens: bot ativo.');
+    return new Response('Radar de Passagens: bot ativo.');
   },
 
   // Relatório diário nos horários agendados (roda a cada 15 minutos)

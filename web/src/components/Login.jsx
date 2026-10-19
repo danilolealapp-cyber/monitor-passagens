@@ -2,15 +2,7 @@ import { useState } from 'react';
 import { signInWithPopup } from 'firebase/auth';
 import { BellRing, Clock3, LineChart, Plane } from 'lucide-react';
 import { auth, googleProvider } from '../firebase';
-
-function Logo({ className = 'size-7' }) {
-  return (
-    <svg viewBox="0 0 48 48" className={className} aria-hidden="true">
-      <path d="M4 30 44 16l-6 18z" fill="var(--ipe)" />
-      <path d="M4 30l14 2 4 10 4-9" fill="none" stroke="var(--ipe)" strokeWidth="3" strokeLinejoin="round" />
-    </svg>
-  );
-}
+import Brand from './Brand';
 
 function GoogleG() {
   return (
@@ -99,9 +91,8 @@ export default function Login({ notice, disabled = false }) {
       {/* Painel da marca */}
       <section className="relative hidden overflow-hidden bg-sky text-sky-ink lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">
         <FlightArc />
-        <div className="relative flex items-center gap-2.5 font-bold">
-          <Logo />
-          Monitor de passagens
+        <div className="relative">
+          <Brand onDark />
         </div>
 
         <div className="relative">
@@ -128,9 +119,8 @@ export default function Login({ notice, disabled = false }) {
 
       {/* Painel de acesso */}
       <main className="flex flex-col bg-bg px-6 py-8 sm:px-10">
-        <div className="flex items-center gap-2.5 font-bold lg:hidden">
-          <Logo />
-          Monitor de passagens
+        <div className="lg:hidden">
+          <Brand />
         </div>
 
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12">

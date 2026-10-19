@@ -61,7 +61,7 @@ async function buildContext(db, routes) {
   };
 }
 
-const SYSTEM = `Você é o assistente do "Monitor de passagens", um bot de Telegram que acompanha preços de passagens aéreas (1 adulto, econômica).
+const SYSTEM = `Você é o assistente do "Radar de Passagens", um bot de Telegram que acompanha preços de passagens aéreas (1 adulto, econômica).
 Cada rota é "ida e volta" ou "só ida" (campo "tipo"). Sempre diga o tipo ao citar um preço, por exemplo "R$ 3.968 (ida e volta)".
 Os preços vêm do Google Flights, conferidos 3 vezes por dia (07h, 13h e 20h, horário de Brasília).
 Responda em português do Brasil, de forma curta e direta (no máximo ~8 linhas), em texto simples, sem markdown.
