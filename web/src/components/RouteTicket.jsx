@@ -1,4 +1,4 @@
-import { ExternalLink, Plane } from 'lucide-react';
+import { BellRing, ExternalLink, Plane } from 'lucide-react';
 import { useHistory } from '../lib/data';
 import { brl, dayMonth, stopsLabel, timeAgo, toneStyles, verdict, windowLabel } from '../lib/format';
 import PriceRange from './PriceRange';
@@ -34,6 +34,10 @@ export default function RouteTicket({ route }) {
         <p className="mt-2 truncate text-sm font-semibold">{city}</p>
         {route.country && <p className="truncate text-xs text-sky-muted">{route.country}</p>}
         <div className="mt-auto pt-5 text-xs text-sky-muted">
+          <p className="mb-3 inline-flex items-center gap-1.5 rounded-md bg-white/10 px-2 py-1 font-medium text-sky-ink">
+            <BellRing className="size-3.5 text-ipe" aria-hidden="true" />
+            <span className="hidden sm:inline">Alerta em</span> −{Math.round((route.alertThreshold ?? 0.3) * 100)}%
+          </p>
           <p className="tnum">{windowLabel(route.departFrom, route.departTo)}</p>
           <p>
             {route.minNights} a {route.maxNights} noites

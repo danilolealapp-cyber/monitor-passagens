@@ -16,13 +16,9 @@ export default function AlertsList({ routes }) {
       {alerts === null ? (
         <p className="mt-4 text-muted">Carregando…</p>
       ) : alerts.length === 0 ? (
-        <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted">
-          <p>Nenhum alerta ainda.</p>
-          <p>
-            Quando o preço de uma rota cair abaixo do usual no percentual que você escolheu, o aviso aparece aqui e
-            chega na hora pelo Telegram.
-          </p>
-          <p>O preço usual é calculado com as varreduras dos últimos 30 dias.</p>
+        <div className="mt-3 text-sm leading-relaxed text-muted">
+          <p className="font-medium text-ink">Nenhum alerta ainda.</p>
+          <p className="mt-1">Quando um preço cair abaixo do usual, você recebe o aviso aqui e no Telegram.</p>
         </div>
       ) : (
         <ol className="mt-4 space-y-3">

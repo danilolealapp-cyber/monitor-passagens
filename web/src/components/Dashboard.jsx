@@ -145,7 +145,8 @@ export default function Dashboard({ user, onSignOut }) {
             </button>
           </div>
 
-          {routes.length > 0 && (
+          {/* Atalhos só dentro de uma rota, para trocar de rota sem voltar ao início */}
+          {openRoute && (
             <nav aria-label="Atalhos das rotas" className="-mx-4 mt-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
               <ul className="flex gap-2.5">
                 {routes.map((r) => {

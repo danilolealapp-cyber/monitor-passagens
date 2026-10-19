@@ -1,6 +1,7 @@
 // Mini-gráfico de tendência (SVG simples, sem eixos).
 export default function Sparkline({ values, width = 120, height = 40 }) {
-  if (!values || values.length < 2) return null;
+  // Sem variação de preço o gráfico vira uma linha reta sem informação
+  if (!values || values.length < 3 || new Set(values).size < 2) return null;
 
   const low = Math.min(...values);
   const high = Math.max(...values);
