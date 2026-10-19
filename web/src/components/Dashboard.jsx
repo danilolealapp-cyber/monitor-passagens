@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Check, LogOut, Plus } from 'lucide-react';
 import { useRoutes, MAX_ACTIVE_ROUTES } from '../lib/data';
-import { todayScans } from '../lib/format';
+import { brl, todayScans, toneDot, verdict } from '../lib/format';
 import RouteTicket from './RouteTicket';
 import RouteDetail from './RouteDetail';
 import RouteForm from './RouteForm';
@@ -26,17 +26,21 @@ function useHashRoute() {
 function ScanBoard() {
   const scans = todayScans();
   return (
-    <div className="flex items-center gap-2" aria-label="Varreduras de hoje">
+    <div className="flex items-center gap-1.5" aria-label="Varreduras de hoje" title="Varreduras de preço do dia">
       {scans.map(({ hour, done, next, tomorrow }) => (
         <span
           key={hour}
-          className={`tnum inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold ${
-            next ? 'bg-ipe text-ipe-ink' : done ? 'bg-white/10 text-sky-ink' : 'bg-white/5 text-sky-muted'
+          className={`tnum inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold ${
+            next
+              ? 'bg-ipe text-ipe-ink'
+              : done
+                ? 'text-sky-muted'
+                : 'text-sky-muted ring-1 ring-white/15 ring-inset'
           }`}
         >
-          {done && <Check className="size-3.5" strokeWidth={3} aria-hidden="true" />}
+          {done && <Check className="size-3" strokeWidth={3} aria-hidden="true" />}
           {String(hour).padStart(2, '0')}h
-          {next && <span className="font-normal">{tomorrow ? 'amanhã' : 'próxima'}</span>}
+          {next && <span className="hidden font-normal sm:inline">{tomorrow ? 'amanhã' : 'próxima'}</span>}
         </span>
       ))}
     </div>
@@ -74,9 +78,6 @@ export default function Dashboard({ user, onSignOut }) {
   const canAdd = activeCount < MAX_ACTIVE_ROUTES;
   const openRoute = routes.find((r) => r.id === openId);
 
-  // "Saindo de Brasília" quando todas as rotas saem da mesma cidade
-  const origins = [...new Set(routes.map((r) => r.originName ?? 'Brasília'))];
-  const headline = origins.length > 1 ? 'Suas rotas' : `Saindo de ${origins[0] ?? 'Brasília'}`;
 
   if (error?.code === 'permission-denied') {
     return (
@@ -94,51 +95,88 @@ export default function Dashboard({ user, onSignOut }) {
 
   return (
     <div className="min-h-dvh">
-      <header className="border-b-4 border-ipe bg-sky text-sky-ink">
-        <div className="mx-auto max-w-6xl px-4 pt-5 pb-7 sm:px-6 sm:pt-6">
-          <div className="flex items-center justify-between gap-4">
-            <a href="#" className="flex items-center gap-2.5 font-bold">
-              <svg viewBox="0 0 48 48" className="size-7" aria-hidden="true">
+      <header className="border-b-[3px] border-ipe bg-sky text-sky-ink">
+        {/* Barra superior */}
+        <div className="border-b border-white/10">
+          <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+            <a href="#" className="flex items-center gap-2 text-[15px] font-bold whitespace-nowrap">
+              <svg viewBox="0 0 48 48" className="size-6 shrink-0" aria-hidden="true">
                 <path d="M4 30 44 16l-6 18z" fill="var(--ipe)" />
                 <path d="M4 30l14 2 4 10 4-9" fill="none" stroke="var(--ipe)" strokeWidth="3" strokeLinejoin="round" />
               </svg>
-              Monitor de passagens
+              <span className="hidden sm:inline">Monitor de passagens</span>
+              <span className="sm:hidden">Passagens</span>
             </a>
-            <div className="flex items-center gap-1">
-              <span className="hidden text-sm text-sky-muted sm:inline">{user.email}</span>
+            <div className="flex items-center gap-3">
+              <ScanBoard />
+              <span className="hidden h-5 w-px bg-white/15 md:block" aria-hidden="true" />
+              <span className="hidden max-w-48 truncate text-sm text-sky-muted md:inline">{user.email}</span>
               <button
                 type="button"
                 onClick={onSignOut}
-                className="rounded-full p-2.5 text-sky-muted hover:bg-white/10 hover:text-sky-ink"
+                className="-mr-2 rounded-full p-2 text-sky-muted hover:bg-white/10 hover:text-sky-ink"
                 aria-label="Sair"
                 title="Sair"
               >
-                <LogOut className="size-5" aria-hidden="true" />
+                <LogOut className="size-[18px]" aria-hidden="true" />
               </button>
             </div>
+          </div>
+        </div>
+
+        {/* Suas rotas */}
+        <div className="mx-auto max-w-6xl px-4 pt-5 pb-5 sm:px-6">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-baseline gap-3">
+              <h1 className="text-2xl font-extrabold tracking-tight">Suas rotas</h1>
+              <span className="text-sm text-sky-muted">
+                {activeCount} de {MAX_ACTIVE_ROUTES} ativas
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setForm({})}
+              disabled={!canAdd}
+              title={canAdd ? undefined : `Limite de ${MAX_ACTIVE_ROUTES} rotas ativas`}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-ipe px-3.5 py-1.5 text-sm font-semibold text-ipe-ink hover:brightness-105 disabled:opacity-40"
+            >
+              <Plus className="size-4" strokeWidth={2.5} aria-hidden="true" />
+              Nova rota
+            </button>
           </div>
 
-          <div className="mt-8 flex flex-wrap items-end justify-between gap-x-6 gap-y-5">
-            <div>
-              <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{headline}</h1>
-              <p className="mt-1.5 text-sky-muted">
-                {activeCount} de {MAX_ACTIVE_ROUTES} rotas monitoradas, preços conferidos 3 vezes por dia.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <ScanBoard />
-              <button
-                type="button"
-                onClick={() => setForm({})}
-                disabled={!canAdd}
-                title={canAdd ? undefined : `Limite de ${MAX_ACTIVE_ROUTES} rotas ativas`}
-                className="inline-flex items-center gap-2 rounded-full bg-ipe px-4 py-2 text-sm font-semibold text-ipe-ink hover:brightness-105 disabled:opacity-40"
-              >
-                <Plus className="size-4" strokeWidth={2.5} aria-hidden="true" />
-                Nova rota
-              </button>
-            </div>
-          </div>
+          {routes.length > 0 && (
+            <nav aria-label="Atalhos das rotas" className="-mx-4 mt-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+              <ul className="flex gap-2.5">
+                {routes.map((r) => {
+                  const v = verdict(r);
+                  const current = r.id === openId;
+                  return (
+                    <li key={r.id} className="shrink-0">
+                      <a
+                        href={`#/rota/${r.id}`}
+                        aria-current={current ? 'page' : undefined}
+                        className={`flex items-center gap-3 rounded-xl border px-3.5 py-2 transition ${
+                          current
+                            ? 'border-ipe bg-white/10'
+                            : 'border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10'
+                        } ${r.active ? '' : 'opacity-50'}`}
+                      >
+                        <span className={`size-2 shrink-0 rounded-full ${toneDot[v.tone]}`} title={v.text} aria-hidden="true" />
+                        <span className="leading-tight">
+                          <span className="block text-sm font-bold">
+                            {r.origin ?? 'BSB'} <span className="font-normal text-sky-muted">para</span> {r.destination}
+                          </span>
+                          <span className="block text-xs text-sky-muted">{r.active ? r.name || r.destination : 'Pausada'}</span>
+                        </span>
+                        <span className="tnum ml-1 text-base font-bold text-ipe">{brl(r.lastPrice)}</span>
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+          )}
         </div>
       </header>
 
