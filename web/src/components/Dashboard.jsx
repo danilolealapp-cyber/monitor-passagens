@@ -95,9 +95,9 @@ export default function Dashboard({ user, onSignOut }) {
 
   return (
     <div className="min-h-dvh">
-      <header className="border-b-[3px] border-ipe bg-sky text-sky-ink">
-        {/* Barra superior */}
-        <div className="border-b border-white/10">
+      {/* Barra superior fixa, fechada pela linha amarela */}
+      <header className="sticky top-0 z-30 border-b-[3px] border-ipe bg-sky text-sky-ink">
+        <div>
           <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
             <a href="#" className="flex items-center gap-2 text-[15px] font-bold whitespace-nowrap">
               <svg viewBox="0 0 48 48" className="size-6 shrink-0" aria-hidden="true">
@@ -124,12 +124,17 @@ export default function Dashboard({ user, onSignOut }) {
           </div>
         </div>
 
-        {/* Suas rotas */}
-        <div className="mx-auto max-w-6xl px-4 pt-5 pb-5 sm:px-6">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-baseline gap-3">
-              <h1 className="text-2xl font-extrabold tracking-tight">Suas rotas</h1>
-              <span className="text-sm text-sky-muted">
+      </header>
+
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+        {openRoute ? (
+          <RouteDetail route={openRoute} routes={routes} onEdit={() => setForm({ route: openRoute })} />
+        ) : (
+          <>
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-3">
+              <h1 className="text-2xl font-extrabold tracking-tight whitespace-nowrap sm:text-3xl">Suas rotas</h1>
+              <span className="text-sm text-muted">
                 {activeCount} de {MAX_ACTIVE_ROUTES} ativas
               </span>
             </div>
@@ -138,24 +143,14 @@ export default function Dashboard({ user, onSignOut }) {
               onClick={() => setForm({})}
               disabled={!canAdd}
               title={canAdd ? undefined : `Limite de ${MAX_ACTIVE_ROUTES} rotas ativas`}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-ipe px-3.5 py-1.5 text-sm font-semibold text-ipe-ink hover:brightness-105 disabled:opacity-40"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-ipe px-4 py-2 text-sm font-semibold text-ipe-ink hover:brightness-105 disabled:opacity-40"
             >
               <Plus className="size-4" strokeWidth={2.5} aria-hidden="true" />
               Nova rota
             </button>
           </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        {openRoute ? (
-          <RouteDetail route={openRoute} routes={routes} onEdit={() => setForm({ route: openRoute })} />
-        ) : (
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
-            <section aria-labelledby="rotas">
-              <h2 id="rotas" className="sr-only">
-                Rotas
-              </h2>
+            <section aria-label="Rotas">
               {loading ? (
                 <div className="h-56 animate-pulse rounded-2xl bg-surface" />
               ) : (
@@ -175,6 +170,7 @@ export default function Dashboard({ user, onSignOut }) {
             </section>
             <AlertsList routes={routes} />
           </div>
+          </>
         )}
       </main>
 
