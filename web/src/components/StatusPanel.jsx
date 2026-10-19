@@ -20,6 +20,32 @@ function Row({ label, value, hint, tone = 'ok' }) {
   );
 }
 
+// Como os relatórios chegam no Telegram: nos horários agendados, após cada varredura, ou só alertas
+function ReportsRow({ settings }) {
+  const times = settings.reportTimes ?? [];
+  const afterScan = settings.scanReports !== false;
+  if (times.length) {
+    return (
+      <Row
+        label="Relatórios"
+        value={`Às ${times.join(', ')}`}
+        hint={afterScan ? 'Também após cada varredura.' : 'Para receber após cada varredura: /reativar no bot.'}
+      />
+    );
+  }
+  if (afterScan) {
+    return <Row label="Relatórios" value="Após cada varredura" hint="Para horários fixos: /agendar 08:00 no bot." />;
+  }
+  return (
+    <Row
+      label="Relatórios"
+      value="Só alertas"
+      tone="off"
+      hint="Os alertas de queda continuam chegando. Para relatórios: /reativar ou /agendar 08:00 no bot."
+    />
+  );
+}
+
 // Situação do robô e do bot do Telegram
 export default function StatusPanel({ routes }) {
   const settings = useSettings();
@@ -57,18 +83,7 @@ export default function StatusPanel({ routes }) {
               tone={settings.chatId ? 'ok' : 'warn'}
               hint={settings.chatId ? null : 'No bot, envie /start seguido do código de ativação.'}
             />
-            <Row
-              label="Relatório diário"
-              value={settings.reportTimes?.length ? settings.reportTimes.join(', ') : 'Não agendado'}
-              tone={settings.reportTimes?.length ? 'ok' : 'off'}
-              hint={settings.reportTimes?.length ? null : 'No bot, envie /agendar 08:00.'}
-            />
-            <Row
-              label="Relatório após varredura"
-              value={settings.scanReports === false ? 'Silenciado' : 'Ligado'}
-              tone={settings.scanReports === false ? 'off' : 'ok'}
-              hint={settings.scanReports === false ? 'Os alertas de queda continuam chegando.' : null}
-            />
+            <ReportsRow settings={settings} />
           </>
         )}
       </div>

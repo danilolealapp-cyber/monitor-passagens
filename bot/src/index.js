@@ -18,7 +18,7 @@ const HELP = [
   '/agendar 08:00: relatório nesse horário (até 3 horários, ex.: /agendar 08:00 18:30). Ao agendar, o relatório após cada varredura é desligado',
   '/agendar nenhum: cancela o agendamento e volta ao relatório após cada varredura',
   '/silenciar: para o relatório após cada varredura (os alertas de queda continuam)',
-  '/reativar: volta a receber o relatório após cada varredura',
+  '/reativar: volta a receber o relatório após cada varredura (cancela os horários agendados)',
   '/buscar: faz uma varredura agora',
   '',
   'Você também pode perguntar livremente, por exemplo: <i>qual a data mais barata para Lisboa?</i>',
@@ -123,7 +123,7 @@ async function handleMessage(env, message) {
           '🔕 Desliguei o relatório após cada varredura, para você não receber repetido. Os alertas de queda continuam chegando na hora.',
           'Se não houver varredura nova desde o último relatório, o agendado não é enviado de novo.',
           '',
-          'Para receber após cada varredura também: /reativar',
+          'Para voltar a receber após cada varredura (sem horário fixo): /reativar',
         ].join('\n'),
       );
     }
@@ -132,9 +132,18 @@ async function handleMessage(env, message) {
       await db.merge(SETTINGS, { scanReports: false });
       return sendPlain(env, chatId, '🔕 Relatórios após cada varredura desligados. Os alertas de queda continuam chegando.');
 
-    case '/reativar':
-      await db.merge(SETTINGS, { scanReports: true });
-      return sendPlain(env, chatId, '🔔 Relatórios após cada varredura religados.');
+    // Relatório após cada varredura e relatório agendado são modos excludentes
+    case '/reativar': {
+      const hadSchedule = settings.reportTimes?.length > 0;
+      await db.merge(SETTINGS, { scanReports: true, reportTimes: [] });
+      return sendPlain(
+        env,
+        chatId,
+        `🔔 Relatórios após cada varredura religados (07h, 13h e 20h).${
+          hadSchedule ? `\n🕒 Os horários agendados (${settings.reportTimes.join(', ')}) foram cancelados.` : ''
+        }`,
+      );
+    }
 
     case '/buscar': {
       const started = await triggerScan(env);
