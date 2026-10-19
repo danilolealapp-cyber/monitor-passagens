@@ -1,0 +1,116 @@
+@import 'tailwindcss';
+
+/* Paleta: céu de Brasília + ipê-amarelo */
+:root {
+  --bg: #eef2f7;
+  --surface: #ffffff;
+  --ink: #14213d;
+  --muted: #5b6b86;
+  --line: #d5dde8;
+  --sky: #1b2a4a;
+  --sky-ink: #f4f7fb;
+  --sky-muted: #a9b8d3;
+  --ipe: #f2b705;
+  --ipe-ink: #14213d;
+  --deal: #0b7a53;
+  --deal-bg: #e1f3ea;
+  --high: #b93c0a;
+  --high-bg: #fbe9df;
+  --warm: #7a5d00;
+  --warm-bg: #fdf3d3;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1528;
+    --surface: #16213a;
+    --ink: #e7edf6;
+    --muted: #9aa9c2;
+    --line: #26344f;
+    --sky: #0a1122;
+    --sky-ink: #e7edf6;
+    --sky-muted: #8796b2;
+    --deal: #47c995;
+    --deal-bg: #10332a;
+    --high: #f08a5d;
+    --high-bg: #3a1f14;
+    --warm: #f2c94c;
+    --warm-bg: #3a300f;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-sky: var(--sky);
+  --color-sky-ink: var(--sky-ink);
+  --color-sky-muted: var(--sky-muted);
+  --color-ipe: var(--ipe);
+  --color-ipe-ink: var(--ipe-ink);
+  --color-deal: var(--deal);
+  --color-deal-bg: var(--deal-bg);
+  --color-high: var(--high);
+  --color-high-bg: var(--high-bg);
+  --color-warm: var(--warm);
+  --color-warm-bg: var(--warm-bg);
+  --font-sans: 'Schibsted Grotesk', system-ui, sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ipe);
+  outline-offset: 2px;
+}
+
+/* Picote do cartão de embarque */
+.ticket-cut {
+  position: relative;
+}
+.ticket-cut::before,
+.ticket-cut::after {
+  content: '';
+  position: absolute;
+  left: -9px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bg);
+}
+.ticket-cut::before {
+  top: -9px;
+}
+.ticket-cut::after {
+  bottom: -9px;
+}
+
+@layer components {
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-2 text-sm font-semibold hover:border-muted;
+  }
+}
+
+dialog::backdrop {
+  background: rgb(10 17 34 / 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -1,0 +1,18 @@
+rules_version = '2';
+
+// Só a conta Google do cliente pode ler e alterar os dados pelo site.
+// O robô de varredura usa a chave de serviço e não passa por estas regras.
+// Antes de colar no Firebase, troque EMAIL_DO_CLIENTE pelo Gmail do cliente.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email == 'EMAIL_DO_CLIENTE';
+    }
+
+    match /{document=**} {
+      allow read, write: if isOwner();
+    }
+  }
+}
