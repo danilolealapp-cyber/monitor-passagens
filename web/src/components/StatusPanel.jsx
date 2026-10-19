@@ -41,7 +41,13 @@ export default function StatusPanel({ routes }) {
           label="Última varredura"
           value={lastScan ? timeAgo(lastScan) : 'ainda não'}
           tone={!lastScan || late || failed ? 'warn' : 'ok'}
-          hint={late ? 'Atrasada. Confira a aba Actions no GitHub.' : failed ? 'Alguma rota voltou sem preços.' : null}
+          hint={
+            late
+              ? 'Atrasada. Confira a aba Actions no GitHub.'
+              : failed
+                ? 'Alguma rota não teve preço novo na última varredura. Os preços mostrados são da anterior.'
+                : null
+          }
         />
         {settings !== undefined && (
           <>

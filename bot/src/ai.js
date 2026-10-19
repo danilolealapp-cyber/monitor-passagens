@@ -8,7 +8,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // Erros temporários (sobrecarga, limite, falha do servidor) valem nova tentativa
 const isTransient = (status) => status === 429 || status >= 500;
 
-async function generate(env, model, system, question) {
+async function generate(env, model, system, question, timeoutMs = TIMEOUT_MS) {
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
@@ -17,7 +17,7 @@ async function generate(env, model, system, question) {
       contents: [{ role: 'user', parts: [{ text: question }] }],
       generationConfig: { temperature: 0.4, maxOutputTokens: 900 },
     }),
-    signal: AbortSignal.timeout(TIMEOUT_MS),
+    signal: AbortSignal.timeout(timeoutMs),
   });
   if (!res.ok) {
     const err = new Error(`Gemini ${res.status} (${model}): ${(await res.text()).slice(0, 200)}`);
@@ -28,16 +28,23 @@ async function generate(env, model, system, question) {
   return (json.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? '').join('').trim();
 }
 
+// A Cloudflare encerra o trabalho em segundo plano após ~30s. Todas as tentativas
+// precisam caber nesse tempo, com folga para enviar a resposta no Telegram.
+const TOTAL_BUDGET_MS = 20_000;
+
 // Tenta o modelo principal (com uma nova tentativa) e depois os modelos reserva.
 async function generateWithFallback(env, system, question) {
   const primary = env.GEMINI_MODEL || 'gemini-flash-latest';
   const models = [primary, ...FALLBACK_MODELS.filter((m) => m !== primary)];
+  const deadline = Date.now() + TOTAL_BUDGET_MS;
   let lastError;
   for (const [i, model] of models.entries()) {
     const attempts = i === 0 ? 2 : 1;
     for (let a = 0; a < attempts; a++) {
+      const remaining = deadline - Date.now();
+      if (remaining < 3000) throw lastError ?? Object.assign(new Error('Tempo esgotado'), { name: 'TimeoutError' });
       try {
-        return await generate(env, model, system, question);
+        return await generate(env, model, system, question, Math.min(TIMEOUT_MS, remaining));
       } catch (err) {
         lastError = err;
         console.error(err.message);

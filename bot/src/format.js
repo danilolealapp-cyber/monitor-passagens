@@ -71,6 +71,8 @@ export function reportText(routes) {
       lines.push(`🗓 ${datesLabel(b)}, ${escapeHtml(b.airline ?? '?')}, ${stopsLabel(b.transfers ?? 0)}`);
     }
     lines.push(trend(r));
+    if (r.lastScanStatus === 'reserva') lines.push('⚠️ O Google Flights não respondeu na última varredura. O preço acima é da anterior.');
+    if (r.lastScanStatus === 'sem-dados') lines.push('😶 A última varredura não encontrou voos para esse período.');
     if (b?.link) lines.push(`🔗 <a href="${escapeHtml(b.link)}">Ver voos</a>`);
     return lines.join('\n');
   });

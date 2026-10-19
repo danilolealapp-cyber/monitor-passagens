@@ -4,7 +4,8 @@ import { createRoute, updateRoute, MAX_ACTIVE_ROUTES } from '../lib/data';
 import AirportPicker from './AirportPicker';
 
 const DAY_MS = 86_400_000;
-const today = () => new Date().toISOString().slice(0, 10);
+// Data de hoje no fuso de quem usa o site (toISOString usaria o horário de Londres)
+const today = () => new Date().toLocaleDateString('sv-SE');
 const daysBetween = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / DAY_MS);
 
 function validate(f) {

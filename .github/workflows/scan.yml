@@ -6,6 +6,11 @@ on:
     - cron: '0 10,16,23 * * *'
   workflow_dispatch: # permite rodar manualmente pelo site do GitHub
 
+# Uma varredura de cada vez: se outra for pedida no meio, ela espera a atual terminar
+concurrency:
+  group: varredura
+  cancel-in-progress: false
+
 jobs:
   scan:
     runs-on: ubuntu-latest

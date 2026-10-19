@@ -31,7 +31,7 @@ function alertMessage(route, best, ev) {
     '',
     `💰 <b>${brl(best.price)}</b> (usual: ${brl(ev.baseline)})`,
     `🗓 ${offerLine(best)}`,
-    best.link ? `🔗 <a href="${escapeHtml(best.link)}">Ver passagem</a>` : '',
+    best.link ? `🔗 <a href="${escapeHtml(best.link)}">Ver passagem</a>` : null,
     '',
     '<i>Preços mudam rápido. Confira antes de comprar.</i>',
   ]
@@ -76,9 +76,26 @@ async function scanRoute(doc, now) {
   }
 
   const best = offers[0];
+
+  // A fonte reserva guarda preços antigos de buscas de outras pessoas. Ela serve só como
+  // referência no relatório: não entra no histórico nem dispara alerta (evita alerta falso).
+  if (source !== 'google-flights') {
+    await doc.ref.update({ lastScanAt: Timestamp.fromDate(now), lastScanStatus: 'reserva' });
+    return {
+      text: [
+        `✈️ <b>${routeLabel(route)}</b>`,
+        '⚠️ O Google Flights não respondeu nesta varredura.',
+        `Referência de outra fonte (pode estar desatualizada): ${brl(best.price)}, ${offerLine(best)}`,
+      ].join('\n'),
+    };
+  }
+
   const since = Timestamp.fromMillis(now.getTime() - HISTORY_DAYS * 86_400_000);
   const historySnap = await doc.ref.collection('snapshots').where('scannedAt', '>=', since).get();
-  const history = historySnap.docs.map((d) => d.data().minPrice);
+  const history = historySnap.docs
+    .map((d) => d.data())
+    .filter((s) => s.source === 'google-flights')
+    .map((s) => s.minPrice);
 
   const ev = evaluate({
     currentPrice: best.price,
@@ -104,17 +121,22 @@ async function scanRoute(doc, now) {
   };
 
   if (ev.isDeal && shouldAlert(route.lastAlert, best.price, now)) {
-    await sendMessage(alertMessage(route, best, ev));
-    await db.collection('alerts').add({
-      routeId: route.id,
-      createdAt: Timestamp.fromDate(now),
-      price: best.price,
-      baseline: ev.baseline,
-      dropPct: ev.dropPct,
-      offer: best,
-    });
-    routeUpdate.lastAlert = { price: best.price, at: Timestamp.fromDate(now) };
-    console.log(`  Alerta enviado: ${route.destination} a ${best.price}`);
+    // Se o envio falhar, a rota é atualizada mesmo assim e o alerta é tentado na próxima varredura
+    try {
+      await sendMessage(alertMessage(route, best, ev));
+      await db.collection('alerts').add({
+        routeId: route.id,
+        createdAt: Timestamp.fromDate(now),
+        price: best.price,
+        baseline: ev.baseline,
+        dropPct: ev.dropPct,
+        offer: best,
+      });
+      routeUpdate.lastAlert = { price: best.price, at: Timestamp.fromDate(now) };
+      console.log(`  Alerta enviado: ${route.destination} a ${best.price}`);
+    } catch (err) {
+      console.error(`  Falha ao enviar o alerta: ${err.message}`);
+    }
   }
 
   await doc.ref.update(routeUpdate);
