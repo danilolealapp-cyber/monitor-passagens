@@ -37,6 +37,18 @@ export function brasiliaNow(date = new Date()) {
   };
 }
 
+// O relatório agendado só vale a pena se houve varredura depois do último relatório
+// enviado (pelo agendamento ou pelo robô de varredura). Evita mensagens repetidas.
+export function hasNewScan(settings, routes) {
+  const last = settings.lastReportAt;
+  if (!last) return true;
+  const latestScan = routes
+    .filter((r) => r.active && r.lastScanAt)
+    .map((r) => r.lastScanAt.getTime())
+    .sort((a, b) => b - a)[0];
+  return latestScan === undefined || latestScan > last.getTime();
+}
+
 export function trend(route) {
   if (route.lastPrice == null) return '⏳ aguardando a primeira varredura';
   if (route.baseline == null) return '⏳ juntando histórico (alertas liberados após 2 dias)';

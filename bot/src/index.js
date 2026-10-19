@@ -5,7 +5,7 @@
 
 import { firestore } from './firestore.js';
 import { COMMANDS, sendHtml, sendPlain, telegram, webhookSecret } from './telegram.js';
-import { brasiliaNow, brl, dayMonth, reportText, routeLabel } from './format.js';
+import { brasiliaNow, brl, dayMonth, hasNewScan, reportText, routeLabel } from './format.js';
 import { answer } from './ai.js';
 
 const SETTINGS = 'settings/bot';
@@ -15,8 +15,8 @@ const HELP = [
   '',
   '/relatorio: preços atuais de todas as rotas',
   '/rotas: rotas monitoradas',
-  '/agendar 08:00: relatório diário nesse horário (até 3 horários, ex.: /agendar 08:00 18:30)',
-  '/agendar nenhum: cancela o relatório diário',
+  '/agendar 08:00: relatório nesse horário (até 3 horários, ex.: /agendar 08:00 18:30). Ao agendar, o relatório após cada varredura é desligado',
+  '/agendar nenhum: cancela o agendamento e volta ao relatório após cada varredura',
   '/silenciar: para o relatório após cada varredura (os alertas de queda continuam)',
   '/reativar: volta a receber o relatório após cada varredura',
   '/buscar: faz uma varredura agora',
@@ -107,13 +107,25 @@ async function handleMessage(env, message) {
         return sendHtml(env, chatId, `🕒 Relatório diário: <b>${current}</b>\n\nPara mudar: /agendar 08:00 (até 3 horários)\nPara cancelar: /agendar nenhum`);
       }
       if (['nenhum', 'off', 'cancelar'].includes(args[0].toLowerCase())) {
-        await db.merge(SETTINGS, { reportTimes: [] });
-        return sendPlain(env, chatId, '🕒 Relatório diário cancelado.');
+        await db.merge(SETTINGS, { reportTimes: [], scanReports: true });
+        return sendPlain(env, chatId, '🕒 Relatório agendado cancelado. Voltei a enviar o relatório após cada varredura (07h, 13h e 20h).');
       }
       const times = parseTimes(args);
       if (!times) return sendPlain(env, chatId, 'Não entendi o horário. Use, por exemplo: /agendar 08:00 ou /agendar 8h 18:30');
-      await db.merge(SETTINGS, { reportTimes: times });
-      return sendHtml(env, chatId, `🕒 Combinado! Relatório diário às <b>${times.join(', ')}</b> (horário de Brasília).`);
+      // Quem agenda escolhe quando quer receber: desliga o relatório após cada varredura
+      await db.merge(SETTINGS, { reportTimes: times, scanReports: false });
+      return sendHtml(
+        env,
+        chatId,
+        [
+          `🕒 Combinado! Relatório diário às <b>${times.join(', ')}</b> (horário de Brasília).`,
+          '',
+          '🔕 Desliguei o relatório após cada varredura, para você não receber repetido. Os alertas de queda continuam chegando na hora.',
+          'Se não houver varredura nova desde o último relatório, o agendado não é enviado de novo.',
+          '',
+          'Para receber após cada varredura também: /reativar',
+        ].join('\n'),
+      );
     }
 
     case '/silenciar':
@@ -189,6 +201,9 @@ export default {
     if (!settings.reportTimes.includes(slot)) return;
 
     const routes = await db.list('routes');
+    if (!hasNewScan(settings, routes)) return; // nada novo desde o último relatório
+
     await sendHtml(env, settings.chatId, reportText(routes));
+    await db.merge(SETTINGS, { lastReportAt: new Date() });
   },
 };

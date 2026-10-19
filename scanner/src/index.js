@@ -148,6 +148,8 @@ async function main() {
     const hour = now.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
     const date = now.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
     await sendMessage([`📊 <b>Relatório de passagens</b> · ${date} ${hour}`, '', blocks.join('\n\n')].join('\n'));
+    // O bot usa este registro para não repetir o relatório agendado logo em seguida
+    await db.doc('settings/bot').set({ lastReportAt: Timestamp.now() }, { merge: true });
   }
 
   if (failures === routes.size) {
