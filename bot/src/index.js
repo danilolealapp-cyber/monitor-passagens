@@ -194,7 +194,7 @@ export default {
         url: `${url.origin}/telegram`,
         secret_token: secret,
         allowed_updates: ['message'],
-        drop_pending_updates: true,
+        drop_pending_updates: false, // mensagens enviadas durante uma atualização não se perdem
       });
       await telegram(env, 'setMyCommands', { commands: COMMANDS });
       return new Response('webhook configurado');

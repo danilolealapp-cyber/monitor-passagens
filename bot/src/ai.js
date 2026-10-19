@@ -1,6 +1,12 @@
 // Respostas em texto livre com o Gemini (plano gratuito do Google AI Studio).
 
-const FALLBACK_MODEL = 'gemini-2.5-flash';
+// Modelos gratuitos tentados em ordem quando o anterior está sobrecarregado ou indisponível
+const FALLBACK_MODELS = ['gemini-2.5-flash', 'gemini-flash-lite-latest', 'gemini-2.5-flash-lite'];
+const TIMEOUT_MS = 12_000;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Erros temporários (sobrecarga, limite, falha do servidor) valem nova tentativa
+const isTransient = (status) => status === 429 || status >= 500;
 
 async function generate(env, model, system, question) {
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
@@ -11,14 +17,37 @@ async function generate(env, model, system, question) {
       contents: [{ role: 'user', parts: [{ text: question }] }],
       generationConfig: { temperature: 0.4, maxOutputTokens: 900 },
     }),
+    signal: AbortSignal.timeout(TIMEOUT_MS),
   });
   if (!res.ok) {
-    const err = new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    const err = new Error(`Gemini ${res.status} (${model}): ${(await res.text()).slice(0, 200)}`);
     err.status = res.status;
     throw err;
   }
   const json = await res.json();
   return (json.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? '').join('').trim();
+}
+
+// Tenta o modelo principal (com uma nova tentativa) e depois os modelos reserva.
+async function generateWithFallback(env, system, question) {
+  const primary = env.GEMINI_MODEL || 'gemini-flash-latest';
+  const models = [primary, ...FALLBACK_MODELS.filter((m) => m !== primary)];
+  let lastError;
+  for (const [i, model] of models.entries()) {
+    const attempts = i === 0 ? 2 : 1;
+    for (let a = 0; a < attempts; a++) {
+      try {
+        return await generate(env, model, system, question);
+      } catch (err) {
+        lastError = err;
+        console.error(err.message);
+        const timedOut = err.name === 'TimeoutError' || err.name === 'AbortError';
+        if (!timedOut && err.status !== 404 && !isTransient(err.status)) throw err; // erro de configuração
+        if (a + 1 < attempts) await sleep(1500);
+      }
+    }
+  }
+  throw lastError;
 }
 
 // Monta um resumo compacto dos dados para a IA consultar
@@ -75,16 +104,16 @@ export async function answer(env, db, routes, question) {
 
   const context = await buildContext(db, routes);
   const system = `${SYSTEM}\n\nDados atuais (JSON):\n${JSON.stringify(context)}`;
-  const model = env.GEMINI_MODEL || 'gemini-flash-latest';
 
   try {
-    return (await generate(env, model, system, question)) || 'Não consegui formular uma resposta. Tente reformular a pergunta.';
+    return (await generateWithFallback(env, system, question)) || 'Não consegui formular uma resposta. Tente reformular a pergunta.';
   } catch (err) {
-    // Modelo indisponível: tenta o modelo reserva
-    if (err.status === 404 && model !== FALLBACK_MODEL) {
-      return (await generate(env, FALLBACK_MODEL, system, question)) || 'Não consegui formular uma resposta.';
+    if (err.status === 429) {
+      return 'Atingi o limite gratuito de perguntas da IA por agora. Tente de novo em alguns minutos. Enquanto isso, /relatorio mostra os preços atuais.';
     }
-    if (err.status === 429) return 'Atingi o limite gratuito de perguntas por agora. Tente de novo em alguns minutos.';
+    if (isTransient(err.status) || err.name === 'TimeoutError' || err.name === 'AbortError') {
+      return 'A IA do Google está sobrecarregada agora e não conseguiu responder. Tente de novo em alguns minutos. Enquanto isso, /relatorio mostra os preços atuais.';
+    }
     throw err;
   }
 }
