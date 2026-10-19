@@ -36,12 +36,14 @@ jobs:
           TRAVELPAYOUTS_TOKEN: ${{ secrets.TRAVELPAYOUTS_TOKEN }}
 
   # O GitHub pausa agendamentos após 60 dias sem atividade no repositório.
-  # Este passo mantém o agendamento ligado.
+  # Reativar o agendamento pela API oficial do GitHub reinicia essa contagem.
   keepalive:
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
     permissions:
       actions: write
     steps:
-      - uses: actions/checkout@v5
-      - uses: gautamkrishnar/keepalive-workflow@v2
+      - name: Manter o agendamento ligado
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/scan.yml/enable"
