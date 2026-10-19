@@ -45,7 +45,15 @@ function reportBlock(route, best, ev) {
   else if (ev.dropPct >= 0) trend = `📉 ${Math.round(ev.dropPct * 100)}% abaixo do usual (${brl(ev.baseline)})`;
   else trend = `📈 ${Math.round(-ev.dropPct * 100)}% acima do usual (${brl(ev.baseline)})`;
 
-  return [`✈️ <b>${routeLabel(route)}</b>`, `💰 <b>${brl(best.price)}</b>`, `🗓 ${offerLine(best)}`, trend].join('\n');
+  return [
+    `✈️ <b>${routeLabel(route)}</b>`,
+    `💰 <b>${brl(best.price)}</b>`,
+    `🗓 ${offerLine(best)}`,
+    trend,
+    best.link ? `🔗 <a href="${escapeHtml(best.link)}">Ver voos</a>` : null,
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
 
 // Fonte principal: Google Flights. Reserva: Travelpayouts (menos dados, mas estável).
