@@ -1,4 +1,5 @@
 name: Publicar dashboard
+# Publica o site em GitHub Pages sempre que algo em web/ muda.
 
 on:
   push:
