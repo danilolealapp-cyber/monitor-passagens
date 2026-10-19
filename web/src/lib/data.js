@@ -56,6 +56,21 @@ export function useHistory(routeId, days) {
   return history;
 }
 
+// Preferências definidas pelo bot do Telegram (chat ativado, horários do relatório)
+export function useSettings() {
+  const [settings, setSettings] = useState(undefined);
+  useEffect(
+    () =>
+      onSnapshot(
+        doc(db, 'settings', 'bot'),
+        (snap) => setSettings(snap.exists() ? snap.data() : {}),
+        () => setSettings({}),
+      ),
+    [],
+  );
+  return settings;
+}
+
 export function useAlerts() {
   const [alerts, setAlerts] = useState(null);
   useEffect(

@@ -7,7 +7,7 @@ export default function AlertsList({ routes }) {
   const byId = Object.fromEntries(routes.map((r) => [r.id, r]));
 
   return (
-    <section aria-labelledby="alertas" className="card self-start p-5">
+    <section aria-labelledby="alertas" className="card p-5">
       <h2 id="alertas" className="flex items-center gap-2 text-lg font-bold">
         <BellRing className="size-5 text-ipe" aria-hidden="true" />
         Alertas

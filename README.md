@@ -5,8 +5,8 @@ e avisa no Telegram quando um preço fica 30% ou mais abaixo do usual.
 
 ## Status das fases
 - [x] **Fase 1–2:** robô de varredura + alerta + relatório no Telegram (pasta `scanner/`)
-- [ ] **Fase 3:** dashboard web (cadastro de rotas, gráficos)
-- [ ] **Fase 4:** comandos no Telegram + IA (Gemini)
+- [x] **Fase 3:** dashboard web (pasta `web/`, publicado no GitHub Pages)
+- [x] **Fase 4:** bot do Telegram com comandos e IA (pasta `bot/`, publicado no Cloudflare Workers)
 - [ ] **Fase 5:** milhas Smiles
 
 ---

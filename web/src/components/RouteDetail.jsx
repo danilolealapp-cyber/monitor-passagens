@@ -3,6 +3,7 @@ import { ArrowLeft, ExternalLink, Pause, Pencil, Play, Trash2 } from 'lucide-rea
 import { deleteRoute, setRouteActive, useHistory } from '../lib/data';
 import { brl, longDate, shortDate, stopsLabel, timeAgo, toneDot, toneStyles, verdict } from '../lib/format';
 import PriceChart from './PriceChart';
+import DatePriceChart from './DatePriceChart';
 
 const PERIODS = [
   [7, '7 dias'],
@@ -130,8 +131,44 @@ export default function RouteDetail({ route, routes = [], onEdit }) {
               <dd className="font-semibold">{updated ? timeAgo(updated) : 'ainda não'}</dd>
             </div>
           </dl>
+
+          {route.lastBest && (
+            <div className="mt-6 border-t border-white/10 pt-5">
+              <p className="text-sm text-sky-muted">Melhor data encontrada</p>
+              <p className="tnum mt-1 text-lg font-bold">
+                {shortDate(route.lastBest.departDate)} a {shortDate(route.lastBest.returnDate)}
+              </p>
+              <p className="text-sm text-sky-muted">
+                {route.lastBest.nights} noites
+                {route.lastBest.airline ? `, ${route.lastBest.airline}` : ''}
+                {route.lastBest.transfers != null ? `, ${stopsLabel(route.lastBest.transfers)}` : ''}
+              </p>
+              {route.lastBest.link && (
+                <a
+                  href={route.lastBest.link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-ipe px-4 py-2.5 text-sm font-semibold text-ipe-ink hover:brightness-105"
+                >
+                  Ver voos no Google Flights <ExternalLink className="size-4" aria-hidden="true" />
+                </a>
+              )}
+            </div>
+          )}
         </aside>
       </div>
+
+      <section className="card mt-6 p-5 sm:p-6" aria-labelledby="por-data">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h3 id="por-data" className="text-lg font-bold">
+            Preço por data de ida
+          </h3>
+          <p className="text-sm text-muted">Menor preço visto nos últimos 3 dias. Em verde, o dia mais barato.</p>
+        </div>
+        <div className="mt-5">
+          <DatePriceChart history={history} />
+        </div>
+      </section>
 
       <section className="card mt-6 p-5 sm:p-6" aria-labelledby="datas">
         <h3 id="datas" className="text-lg font-bold">

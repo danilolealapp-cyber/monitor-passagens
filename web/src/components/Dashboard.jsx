@@ -6,6 +6,7 @@ import RouteTicket from './RouteTicket';
 import RouteDetail from './RouteDetail';
 import RouteForm from './RouteForm';
 import AlertsList from './AlertsList';
+import StatusPanel from './StatusPanel';
 
 // Navegação simples pelo endereço: #/rota/<id> abre os detalhes
 function useHashRoute() {
@@ -168,11 +169,19 @@ export default function Dashboard({ user, onSignOut }) {
                 </ul>
               )}
             </section>
-            <AlertsList routes={routes} />
+            <aside className="space-y-6 self-start">
+              <StatusPanel routes={routes} />
+              <AlertsList routes={routes} />
+            </aside>
           </div>
           </>
         )}
       </main>
+
+      <footer className="mx-auto max-w-6xl px-4 pt-4 pb-10 text-xs text-muted sm:px-6">
+        Preços do Google Flights para 1 adulto, ida e volta, classe econômica. Podem mudar a qualquer momento: confira antes
+        de comprar.
+      </footer>
 
       {form && <RouteForm route={form.route} canActivate={canAdd} onClose={() => setForm(null)} />}
     </div>
