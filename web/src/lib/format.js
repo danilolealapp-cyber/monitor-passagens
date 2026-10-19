@@ -92,14 +92,14 @@ export const toneStyles = {
   waiting: 'bg-line/60 text-muted',
 };
 
-// Ponto colorido de situação (usado nos atalhos do topo)
+// Ponto colorido de situação (usado nos atalhos entre rotas)
 export const toneDot = {
   deal: 'bg-deal ring-2 ring-deal/30',
   good: 'bg-deal',
-  normal: 'bg-sky-muted',
+  normal: 'bg-muted',
   high: 'bg-high',
   warming: 'bg-ipe',
-  waiting: 'bg-sky-muted/50',
+  waiting: 'bg-muted/50',
 };
 
 export const stopsLabel = (n) => (n === 0 ? 'voo direto' : n === 1 ? '1 conexão' : `${n} conexões`);

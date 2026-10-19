@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Check, LogOut, Plus } from 'lucide-react';
 import { useRoutes, MAX_ACTIVE_ROUTES } from '../lib/data';
-import { brl, todayScans, toneDot, verdict } from '../lib/format';
+import { todayScans } from '../lib/format';
 import RouteTicket from './RouteTicket';
 import RouteDetail from './RouteDetail';
 import RouteForm from './RouteForm';
@@ -144,46 +144,12 @@ export default function Dashboard({ user, onSignOut }) {
               Nova rota
             </button>
           </div>
-
-          {/* Atalhos só dentro de uma rota, para trocar de rota sem voltar ao início */}
-          {openRoute && (
-            <nav aria-label="Atalhos das rotas" className="-mx-4 mt-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-              <ul className="flex gap-2.5">
-                {routes.map((r) => {
-                  const v = verdict(r);
-                  const current = r.id === openId;
-                  return (
-                    <li key={r.id} className="shrink-0">
-                      <a
-                        href={`#/rota/${r.id}`}
-                        aria-current={current ? 'page' : undefined}
-                        className={`flex items-center gap-3 rounded-xl border px-3.5 py-2 transition ${
-                          current
-                            ? 'border-ipe bg-white/10'
-                            : 'border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10'
-                        } ${r.active ? '' : 'opacity-50'}`}
-                      >
-                        <span className={`size-2 shrink-0 rounded-full ${toneDot[v.tone]}`} title={v.text} aria-hidden="true" />
-                        <span className="leading-tight">
-                          <span className="block text-sm font-bold">
-                            {r.origin ?? 'BSB'} <span className="font-normal text-sky-muted">para</span> {r.destination}
-                          </span>
-                          <span className="block text-xs text-sky-muted">{r.active ? r.name || r.destination : 'Pausada'}</span>
-                        </span>
-                        <span className="tnum ml-1 text-base font-bold text-ipe">{brl(r.lastPrice)}</span>
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
-            </nav>
-          )}
         </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         {openRoute ? (
-          <RouteDetail route={openRoute} onEdit={() => setForm({ route: openRoute })} />
+          <RouteDetail route={openRoute} routes={routes} onEdit={() => setForm({ route: openRoute })} />
         ) : (
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
             <section aria-labelledby="rotas">

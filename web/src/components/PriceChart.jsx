@@ -28,7 +28,15 @@ export default function PriceChart({ history }) {
   }
 
   const data = history.map((h) => ({ t: h.at.getTime(), price: h.minPrice }));
-  const usual = median(data.map((d) => d.price));
+  const prices = data.map((d) => d.price);
+  const usual = median(prices);
+
+  // Margem acima e abaixo, para a linha não colar nas bordas
+  // (e para o eixo não repetir o mesmo valor quando o preço não mudou)
+  const lo = Math.min(...prices);
+  const hi = Math.max(...prices);
+  const pad = Math.max((hi - lo) * 0.15, hi * 0.05);
+  const domain = [Math.max(0, Math.floor((lo - pad) / 100) * 100), Math.ceil((hi + pad) / 100) * 100];
 
   return (
     <div className="h-72" role="img" aria-label="Gráfico do menor preço encontrado em cada varredura">
@@ -53,12 +61,14 @@ export default function PriceChart({ history }) {
             minTickGap={40}
           />
           <YAxis
-            tickFormatter={(v) => `${Math.round(v / 100) / 10} mil`}
+            tickFormatter={(v) => v.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
             tick={{ fill: 'var(--muted)', fontSize: 12 }}
             axisLine={false}
             tickLine={false}
-            width={52}
-            domain={['auto', 'auto']}
+            width={56}
+            domain={domain}
+            tickCount={5}
+            allowDecimals={false}
           />
           <Tooltip content={<ChartTooltip />} cursor={{ stroke: 'var(--muted)', strokeDasharray: 3 }} />
           <ReferenceLine

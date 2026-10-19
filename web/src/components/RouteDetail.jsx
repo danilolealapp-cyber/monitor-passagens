@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ArrowLeft, ExternalLink, Pause, Pencil, Play, Trash2 } from 'lucide-react';
 import { deleteRoute, setRouteActive, useHistory } from '../lib/data';
-import { brl, longDate, shortDate, stopsLabel, timeAgo, toneStyles, verdict } from '../lib/format';
+import { brl, longDate, shortDate, stopsLabel, timeAgo, toneDot, toneStyles, verdict } from '../lib/format';
 import PriceChart from './PriceChart';
 
 const PERIODS = [
@@ -10,7 +10,7 @@ const PERIODS = [
   [90, '90 dias'],
 ];
 
-export default function RouteDetail({ route, onEdit }) {
+export default function RouteDetail({ route, routes = [], onEdit }) {
   const [days, setDays] = useState(30);
   const history = useHistory(route.id, days);
   const v = verdict(route);
@@ -26,10 +26,39 @@ export default function RouteDetail({ route, onEdit }) {
 
   return (
     <article>
-      <a href="#" className="inline-flex items-center gap-2 text-sm font-medium text-muted hover:text-ink">
-        <ArrowLeft className="size-4" aria-hidden="true" />
-        Todas as rotas
-      </a>
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+        <a href="#" className="inline-flex items-center gap-2 text-sm font-medium text-muted hover:text-ink">
+          <ArrowLeft className="size-4" aria-hidden="true" />
+          Todas as rotas
+        </a>
+
+        {/* Trocar de rota sem voltar ao início (só com 2 rotas ou mais) */}
+        {routes.length > 1 && (
+          <nav aria-label="Outras rotas" className="-mx-4 w-[calc(100%+2rem)] overflow-x-auto px-4 sm:mx-0 sm:w-auto sm:px-0">
+            <ul className="flex gap-2">
+              {routes.map((r) => {
+                const current = r.id === route.id;
+                const tone = verdict(r).tone;
+                return (
+                  <li key={r.id} className="shrink-0">
+                    <a
+                      href={`#/rota/${r.id}`}
+                      aria-current={current ? 'page' : undefined}
+                      className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition ${
+                        current ? 'border-ink bg-ink font-semibold text-surface' : 'border-line bg-surface hover:border-muted'
+                      } ${r.active ? '' : 'opacity-50'}`}
+                    >
+                      <span className={`size-2 rounded-full ${toneDot[tone]}`} aria-hidden="true" />
+                      <span className="font-semibold">{r.destination}</span>
+                      <span className={`tnum ${current ? '' : 'text-muted'}`}>{brl(r.lastPrice)}</span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        )}
+      </div>
 
       <div className="mt-6 flex flex-wrap items-end justify-between gap-6">
         <div>
