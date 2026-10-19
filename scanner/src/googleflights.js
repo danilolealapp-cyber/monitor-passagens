@@ -29,13 +29,14 @@ const number = (num, n) => [...field(num, 0), ...varint(n)];
 
 const leg = (date, from, to) => [...text(2, date), ...nested(13, text(2, from)), ...nested(14, text(2, to))];
 
+// Sem returnDate a busca é só de ida
 function buildTfs({ origin, destination, departDate, returnDate }) {
   const bytes = [
     ...nested(3, leg(departDate, origin, destination)),
-    ...nested(3, leg(returnDate, destination, origin)),
+    ...(returnDate ? nested(3, leg(returnDate, destination, origin)) : []),
     ...nested(8, [1]), // 1 adulto
     ...number(9, 1), // classe econômica
-    ...number(19, 1), // ida e volta
+    ...number(19, returnDate ? 1 : 2), // 1 = ida e volta, 2 = só ida
   ];
   return Buffer.from(bytes).toString('base64');
 }
@@ -101,7 +102,10 @@ export function pickTrips(route, now = new Date()) {
   if (start > departTo) return [];
 
   const totalDays = Math.round((Date.parse(departTo) - Date.parse(start)) / DAY_MS) + 1;
-  const nightOptions = [...new Set([minNights, Math.round((minNights + maxNights) / 2), maxNights])];
+  const oneWay = route.tripType === 'oneway';
+  const nightOptions = oneWay
+    ? [null]
+    : [...new Set([minNights, Math.round((minNights + maxNights) / 2), maxNights])];
   const slot = scanSlot(now);
 
   const trips = [];
@@ -110,11 +114,11 @@ export function pickTrips(route, now = new Date()) {
     const key = `${departDate}|${nights}`;
     if (seen.has(key) || departDate < start || departDate > departTo) return;
     seen.add(key);
-    trips.push({ departDate, returnDate: addDays(departDate, nights), nights });
+    trips.push({ departDate, returnDate: nights == null ? null : addDays(departDate, nights), nights });
   };
 
   // Sempre reconfere a melhor data encontrada antes, para acompanhar o preço dela.
-  if (route.lastBest) add(route.lastBest.departDate, route.lastBest.nights);
+  if (route.lastBest) add(route.lastBest.departDate, oneWay ? null : route.lastBest.nights);
 
   const slots = MAX_SEARCHES_PER_ROUTE - trips.length;
   const step = Math.max(1, Math.ceil(totalDays / slots));
@@ -126,10 +130,10 @@ export function pickTrips(route, now = new Date()) {
 }
 
 /**
- * Testa várias combinações de datas no Google Flights e devolve as ofertas
- * (a mais barata de cada combinação), da mais barata para a mais cara.
+ * Testa várias datas no Google Flights (ida e volta ou só ida, conforme a rota)
+ * e devolve a oferta mais barata de cada data, da mais barata para a mais cara.
  */
-export async function searchRoundTrips(route, now = new Date()) {
+export async function searchTrips(route, now = new Date()) {
   const trips = pickTrips(route, now);
   const offers = [];
   let failures = 0;

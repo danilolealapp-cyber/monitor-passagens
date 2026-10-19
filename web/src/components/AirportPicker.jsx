@@ -56,7 +56,8 @@ export default function AirportPicker({ id, value, exclude, onSelect }) {
 
   return (
     <div className="relative">
-      <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted" aria-hidden="true" />
+      {/* Centralizada na altura do campo (não do bloco, que cresce com mensagens) */}
+      <Search className="pointer-events-none absolute top-[1.4rem] left-3 size-4 -translate-y-1/2 text-muted" aria-hidden="true" />
       <input
         ref={inputRef}
         id={id}

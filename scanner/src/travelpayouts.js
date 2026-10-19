@@ -36,7 +36,7 @@ async function query(params) {
   if (!token) throw new Error('TRAVELPAYOUTS_TOKEN não definido.');
 
   const url = new URL(API_URL);
-  const all = { ...params, currency: 'brl', sorting: 'price', one_way: 'false', limit: 1000, token };
+  const all = { one_way: 'false', ...params, currency: 'brl', sorting: 'price', limit: 1000, token };
   for (const [key, value] of Object.entries(all)) url.searchParams.set(key, String(value));
 
   const res = await fetch(url);
@@ -48,14 +48,14 @@ async function query(params) {
   return json.data ?? [];
 }
 
-function normalize(raw) {
-  if (!raw.departure_at || !raw.return_at) return null;
+function normalize(raw, oneWay) {
+  if (!raw.departure_at || (!oneWay && !raw.return_at)) return null;
   const departDate = raw.departure_at.slice(0, 10);
-  const returnDate = raw.return_at.slice(0, 10);
+  const returnDate = oneWay ? null : raw.return_at.slice(0, 10);
   return {
     departDate,
     returnDate,
-    nights: Math.round((Date.parse(returnDate) - Date.parse(departDate)) / DAY_MS),
+    nights: oneWay ? null : Math.round((Date.parse(returnDate) - Date.parse(departDate)) / DAY_MS),
     price: raw.price,
     airline: raw.airline ?? null,
     transfers: raw.transfers ?? 0,
@@ -69,11 +69,17 @@ function normalize(raw) {
  * ida entre departFrom e departTo, ficando de minNights a maxNights.
  * Retorna as ofertas da mais barata para a mais cara.
  */
-export async function searchRoundTrips(route) {
+export async function searchTrips(route) {
   const { origin, destination, departFrom, departTo, minNights, maxNights } = route;
+  const oneWay = route.tripType === 'oneway';
   const raw = [];
 
   for (const month of monthsBetween(departFrom, departTo)) {
+    if (oneWay) {
+      raw.push(...(await query({ origin, destination, departure_at: month, one_way: 'true' })));
+      await sleep(400);
+      continue;
+    }
     for (const returnMonth of returnMonthsFor(month, minNights, maxNights)) {
       raw.push(...(await query({ origin, destination, departure_at: month, return_at: returnMonth })));
       await sleep(400); // evita estourar o limite de requisições
@@ -81,10 +87,10 @@ export async function searchRoundTrips(route) {
   }
 
   const cheapestByTrip = new Map();
-  for (const offer of raw.map(normalize)) {
+  for (const offer of raw.map((r) => normalize(r, oneWay))) {
     if (!offer) continue;
     if (offer.departDate < departFrom || offer.departDate > departTo) continue;
-    if (offer.nights < minNights || offer.nights > maxNights) continue;
+    if (!oneWay && (offer.nights < minNights || offer.nights > maxNights)) continue;
     const key = `${offer.departDate}|${offer.returnDate}|${offer.airline}`;
     const existing = cheapestByTrip.get(key);
     if (!existing || offer.price < existing.price) cheapestByTrip.set(key, offer);

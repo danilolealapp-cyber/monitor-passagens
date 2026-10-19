@@ -1,6 +1,6 @@
-import { BellRing, ExternalLink, Plane } from 'lucide-react';
+import { ArrowLeftRight, ArrowRight, BellRing, ExternalLink, Plane } from 'lucide-react';
 import { useHistory } from '../lib/data';
-import { brl, dayMonth, stopsLabel, timeAgo, toneStyles, verdict, windowLabel } from '../lib/format';
+import { brl, dayMonth, isOneWay, stopsLabel, timeAgo, toneStyles, tripLabel, verdict, windowLabel } from '../lib/format';
 import PriceRange from './PriceRange';
 import Sparkline from './Sparkline';
 
@@ -22,6 +22,7 @@ export default function RouteTicket({ route }) {
   const best = route.lastBest;
   const updated = route.lastScanAt?.toDate?.();
   const city = route.name || route.destination;
+  const oneWay = isOneWay(route);
 
   return (
     <article className={`card group relative flex overflow-hidden transition hover:border-muted/60 ${route.active ? '' : 'opacity-60'}`}>
@@ -39,9 +40,7 @@ export default function RouteTicket({ route }) {
             <span className="hidden sm:inline">Alerta em</span> −{Math.round((route.alertThreshold ?? 0.3) * 100)}%
           </p>
           <p className="tnum">{windowLabel(route.departFrom, route.departTo)}</p>
-          <p>
-            {route.minNights} a {route.maxNights} noites
-          </p>
+          <p>{oneWay ? 'Só ida' : `${route.minNights} a ${route.maxNights} noites`}</p>
         </div>
       </div>
 
@@ -49,7 +48,13 @@ export default function RouteTicket({ route }) {
       <div className="ticket-cut min-w-0 flex-1 border-l-2 border-dashed border-line p-4 sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-xs text-muted">Menor preço ida e volta</p>
+            <p className="flex items-center gap-2 text-xs text-muted">
+              Menor preço
+              <span className="inline-flex items-center gap-1 rounded-full bg-raised px-2 py-0.5 font-semibold text-ink">
+                {oneWay ? <ArrowRight className="size-3" aria-hidden="true" /> : <ArrowLeftRight className="size-3" aria-hidden="true" />}
+                {tripLabel(route)}
+              </span>
+            </p>
             <h3 className="tnum mt-0.5 text-3xl font-extrabold tracking-tight sm:text-4xl">
               {/* Link que cobre o cartão inteiro */}
               <a href={`#/rota/${route.id}`} className="after:absolute after:inset-0 after:content-['']">
@@ -70,8 +75,14 @@ export default function RouteTicket({ route }) {
         {best && (
           <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-line pt-4 sm:grid-cols-4">
             <Field label="Ida">{dayMonth(best.departDate)}</Field>
-            <Field label="Volta">{dayMonth(best.returnDate)}</Field>
-            <Field label="Duração">{best.nights} noites</Field>
+            {best.returnDate ? (
+              <>
+                <Field label="Volta">{dayMonth(best.returnDate)}</Field>
+                <Field label="Duração">{best.nights} noites</Field>
+              </>
+            ) : (
+              <Field label="Volta">Sem volta</Field>
+            )}
             <Field label="Companhia" note={best.transfers != null ? stopsLabel(best.transfers) : null}>
               {best.airline ?? '—'}
             </Field>

@@ -15,6 +15,7 @@ function validate(f) {
   if (f.departTo < today()) return 'O período precisa estar no futuro.';
   if (f.departFrom > f.departTo) return 'A primeira data precisa vir antes da segunda.';
   if (daysBetween(f.departFrom, f.departTo) > 180) return 'Use um período de até 6 meses para as buscas cobrirem bem as datas.';
+  if (f.tripType === 'oneway') return null; // só ida não tem noites
   if (!(f.minNights >= 1)) return 'A viagem precisa ter pelo menos 1 noite.';
   if (f.maxNights < f.minNights) return 'O máximo de noites precisa ser maior ou igual ao mínimo.';
   if (f.maxNights > 60) return 'O máximo é de 60 noites.';
@@ -27,6 +28,7 @@ export default function RouteForm({ route, canActivate, onClose }) {
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [f, setF] = useState(() => ({
+    tripType: route?.tripType ?? 'roundtrip',
     origin: route?.origin ?? 'BSB',
     originName: route?.originName ?? 'Brasília',
     destination: route?.destination ?? '',
@@ -60,6 +62,7 @@ export default function RouteForm({ route, canActivate, onClose }) {
     if (!editing && !canActivate) return setError(`Você já tem ${MAX_ACTIVE_ROUTES} rotas ativas. Pause ou exclua uma antes.`);
 
     const fields = {
+      tripType: f.tripType,
       origin: f.origin,
       originName: f.originName || f.origin,
       destination: f.destination,
@@ -75,10 +78,8 @@ export default function RouteForm({ route, canActivate, onClose }) {
     setSaving(true);
     try {
       if (editing) {
-        const tripChanged = ['origin', 'destination', 'departFrom', 'departTo', 'minNights', 'maxNights'].some(
-          (k) => fields[k] !== route[k],
-        );
-        await updateRoute(route.id, fields, { resetBest: tripChanged });
+        const tripChanged = ['departFrom', 'departTo', 'minNights', 'maxNights'].some((k) => fields[k] !== route[k]);
+        await updateRoute(route.id, fields, { resetBest: tripChanged, resetHistory: historyResets });
       } else {
         await createRoute(fields);
       }
@@ -88,6 +89,13 @@ export default function RouteForm({ route, canActivate, onClose }) {
       setSaving(false);
     }
   }
+
+  // Mudar origem, destino ou tipo de viagem torna os preços antigos incomparáveis
+  const historyResets =
+    editing &&
+    (f.origin !== (route.origin ?? 'BSB') ||
+      f.destination !== route.destination ||
+      f.tripType !== (route.tripType ?? 'roundtrip'));
 
   const label = 'block text-sm font-semibold';
   const input =
@@ -106,9 +114,36 @@ export default function RouteForm({ route, canActivate, onClose }) {
             <X className="size-5" aria-hidden="true" />
           </button>
         </div>
-        <p className="mt-1 text-sm text-muted">Passagem de ida e volta, 1 adulto, classe econômica.</p>
+        <p className="mt-1 text-sm text-muted">Preço para 1 adulto, classe econômica.</p>
 
         <div className="mt-6 space-y-5">
+          <fieldset>
+            <legend className="sr-only">Tipo de viagem</legend>
+            <div className="grid grid-cols-2 rounded-xl bg-raised p-1">
+              {[
+                ['roundtrip', 'Ida e volta'],
+                ['oneway', 'Só ida'],
+              ].map(([value, text]) => (
+                <label
+                  key={value}
+                  className={`cursor-pointer rounded-lg py-2 text-center text-sm font-semibold has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ipe ${
+                    f.tripType === value ? 'bg-surface text-ink shadow-card' : 'text-muted hover:text-ink'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="tripType"
+                    value={value}
+                    checked={f.tripType === value}
+                    onChange={set('tripType')}
+                    className="sr-only"
+                  />
+                  {text}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label htmlFor="origin" className={label}>
@@ -136,6 +171,7 @@ export default function RouteForm({ route, canActivate, onClose }) {
             </div>
           </fieldset>
 
+          {f.tripType === 'roundtrip' && (
           <fieldset>
             <legend className={label}>Ficar de</legend>
             <div className="mt-1.5 flex items-center gap-3">
@@ -145,6 +181,7 @@ export default function RouteForm({ route, canActivate, onClose }) {
               <span className="text-muted">noites</span>
             </div>
           </fieldset>
+          )}
 
           <div>
             <label htmlFor="threshold" className={label}>
@@ -163,6 +200,13 @@ export default function RouteForm({ route, canActivate, onClose }) {
             <p className="mt-1 text-sm text-muted">Comparado com o preço usual dos últimos 30 dias.</p>
           </div>
         </div>
+
+        {historyResets && (
+          <p className="mt-5 rounded-lg bg-warm-bg px-4 py-3 text-sm text-warm">
+            Ao mudar origem, destino ou tipo de viagem, o histórico de preços desta rota recomeça do zero. Assim os
+            preços antigos não geram alertas falsos.
+          </p>
+        )}
 
         {error && (
           <p role="alert" className="mt-5 rounded-lg bg-high-bg px-4 py-3 text-sm text-high">

@@ -11,11 +11,17 @@ const HISTORY_DAYS = 30;
 const DEFAULT_THRESHOLD = 0.3;
 const sendReport = process.env.SEND_REPORT !== 'false';
 
-const routeLabel = (r) => escapeHtml(`${r.origin} → ${r.destination}${r.name ? ` (${r.name})` : ''}`);
+const tripLabel = (r) => (r.tripType === 'oneway' ? 'só ida' : 'ida e volta');
+
+const routeLabel = (r) =>
+  escapeHtml(`${r.origin} → ${r.destination}${r.name ? ` (${r.name})` : ''}, ${tripLabel(r)}`);
 
 function offerLine(o) {
-  const stops = o.transfers === 0 ? 'direto' : `${o.transfers} conexão(ões)`;
-  return `${dayMonth(o.departDate)} → ${dayMonth(o.returnDate)} (${o.nights} noites) · ${o.airline ?? '?'} · ${stops}`;
+  const stops = o.transfers === 0 ? 'direto' : o.transfers === 1 ? '1 conexão' : `${o.transfers} conexões`;
+  const dates = o.returnDate
+    ? `ida ${dayMonth(o.departDate)}, volta ${dayMonth(o.returnDate)} (${o.nights} noites)`
+    : `ida ${dayMonth(o.departDate)} (só ida)`;
+  return `${dates}, ${o.airline ?? '?'}, ${stops}`;
 }
 
 function alertMessage(route, best, ev) {
@@ -39,16 +45,16 @@ function reportBlock(route, best, ev) {
   else if (ev.dropPct >= 0) trend = `📉 ${Math.round(ev.dropPct * 100)}% abaixo do usual (${brl(ev.baseline)})`;
   else trend = `📈 ${Math.round(-ev.dropPct * 100)}% acima do usual (${brl(ev.baseline)})`;
 
-  return [`✈️ <b>${routeLabel(route)}</b>`, `💰 ${brl(best.price)} · ${offerLine(best)}`, trend].join('\n');
+  return [`✈️ <b>${routeLabel(route)}</b>`, `💰 <b>${brl(best.price)}</b>`, `🗓 ${offerLine(best)}`, trend].join('\n');
 }
 
 // Fonte principal: Google Flights. Reserva: Travelpayouts (menos dados, mas estável).
 async function findOffers(route, now) {
   try {
-    return { offers: await googleFlights.searchRoundTrips(route, now), source: 'google-flights' };
+    return { offers: await googleFlights.searchTrips(route, now), source: 'google-flights' };
   } catch (err) {
     console.error(`  Google Flights falhou (${err.message}). Usando Travelpayouts.`);
-    return { offers: await travelpayouts.searchRoundTrips(route), source: 'travelpayouts' };
+    return { offers: await travelpayouts.searchTrips(route), source: 'travelpayouts' };
   }
 }
 

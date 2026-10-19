@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { ArrowLeft, ExternalLink, Pause, Pencil, Play, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowLeftRight, ArrowRight, ExternalLink, Pause, Pencil, Play, Trash2 } from 'lucide-react';
 import { deleteRoute, setRouteActive, useHistory } from '../lib/data';
-import { brl, longDate, shortDate, stopsLabel, timeAgo, toneDot, toneStyles, verdict } from '../lib/format';
+import { brl, isOneWay, longDate, shortDate, stopsLabel, timeAgo, toneDot, toneStyles, tripLabel, verdict } from '../lib/format';
 import PriceChart from './PriceChart';
 import DatePriceChart from './DatePriceChart';
 
@@ -18,6 +18,7 @@ export default function RouteDetail({ route, routes = [], onEdit }) {
   const latest = history?.at(-1);
   const updated = route.lastScanAt?.toDate?.();
   const city = route.name || route.destination;
+  const oneWay = isOneWay(route);
 
   async function remove() {
     if (!confirm(`Excluir a rota para ${city}? O histórico de preços também será apagado.`)) return;
@@ -63,13 +64,17 @@ export default function RouteDetail({ route, routes = [], onEdit }) {
 
       <div className="mt-6 flex flex-wrap items-end justify-between gap-6">
         <div>
-          <h2 className="text-5xl font-extrabold tracking-tight sm:text-6xl">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-ipe px-3 py-1 text-sm font-semibold text-ipe-ink">
+            {oneWay ? <ArrowRight className="size-4" aria-hidden="true" /> : <ArrowLeftRight className="size-4" aria-hidden="true" />}
+            {tripLabel(route)}
+          </span>
+          <h2 className="mt-3 text-5xl font-extrabold tracking-tight sm:text-6xl">
             {route.origin ?? 'BSB'} <span className="text-muted">para</span> {route.destination}
           </h2>
           <p className="mt-2 text-lg text-muted">
             Saindo de {route.originName ?? 'Brasília'} para {city}
-            {route.country ? `, ${route.country}` : ''}. Ida entre {longDate(route.departFrom)} e {longDate(route.departTo)}, de {route.minNights} a{' '}
-            {route.maxNights} noites.
+            {route.country ? `, ${route.country}` : ''}. Ida entre {longDate(route.departFrom)} e {longDate(route.departTo)}
+            {oneWay ? ', sem volta.' : `, ficando de ${route.minNights} a ${route.maxNights} noites.`}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -136,12 +141,18 @@ export default function RouteDetail({ route, routes = [], onEdit }) {
             <div className="mt-6 border-t border-white/10 pt-5">
               <p className="text-sm text-sky-muted">Melhor data encontrada</p>
               <p className="tnum mt-1 text-lg font-bold">
-                {shortDate(route.lastBest.departDate)} a {shortDate(route.lastBest.returnDate)}
+                {route.lastBest.returnDate
+                  ? `${shortDate(route.lastBest.departDate)} a ${shortDate(route.lastBest.returnDate)}`
+                  : `${shortDate(route.lastBest.departDate)}, só ida`}
               </p>
               <p className="text-sm text-sky-muted">
-                {route.lastBest.nights} noites
-                {route.lastBest.airline ? `, ${route.lastBest.airline}` : ''}
-                {route.lastBest.transfers != null ? `, ${stopsLabel(route.lastBest.transfers)}` : ''}
+                {[
+                  route.lastBest.returnDate ? `${route.lastBest.nights} noites` : null,
+                  route.lastBest.airline,
+                  route.lastBest.transfers != null ? stopsLabel(route.lastBest.transfers) : null,
+                ]
+                  .filter(Boolean)
+                  .join(', ')}
               </p>
               {route.lastBest.link && (
                 <a
@@ -182,8 +193,16 @@ export default function RouteDetail({ route, routes = [], onEdit }) {
               <li key={`${o.departDate}-${o.returnDate}-${o.airline}`}className="flex flex-wrap items-center gap-x-6 gap-y-1 py-3">
                 <span className="tnum w-28 text-lg font-bold">{brl(o.price)}</span>
                 <span className="tnum min-w-48 flex-1">
-                  {shortDate(o.departDate)} a {shortDate(o.returnDate)}{' '}
-                  <span className="text-muted">({o.nights} noites)</span>
+                  {o.returnDate ? (
+                    <>
+                      {shortDate(o.departDate)} a {shortDate(o.returnDate)}{' '}
+                      <span className="text-muted">({o.nights} noites)</span>
+                    </>
+                  ) : (
+                    <>
+                      {shortDate(o.departDate)} <span className="text-muted">(só ida)</span>
+                    </>
+                  )}
                 </span>
                 <span className="text-sm text-muted">
                   {[o.airline, o.transfers != null ? stopsLabel(o.transfers) : null].filter(Boolean).join(', ')}

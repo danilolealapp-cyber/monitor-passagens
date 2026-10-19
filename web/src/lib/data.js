@@ -94,8 +94,31 @@ export async function createRoute(fields) {
   });
 }
 
-// Ao mudar destino ou datas, a melhor data anterior deixa de valer.
-export async function updateRoute(id, fields, { resetBest = false } = {}) {
+async function deleteSnapshots(id) {
+  const snaps = await getDocs(collection(db, 'routes', id, 'snapshots'));
+  for (let i = 0; i < snaps.docs.length; i += 400) {
+    const batch = writeBatch(db);
+    snaps.docs.slice(i, i + 400).forEach((d) => batch.delete(d.ref));
+    await batch.commit();
+  }
+}
+
+// resetBest: datas mudaram, a melhor data anterior deixa de valer.
+// resetHistory: origem, destino ou tipo de viagem mudaram; os preços antigos
+// não são comparáveis e gerariam alertas falsos, então o histórico recomeça.
+export async function updateRoute(id, fields, { resetBest = false, resetHistory = false } = {}) {
+  if (resetHistory) {
+    await deleteSnapshots(id);
+    await updateDoc(doc(db, 'routes', id), {
+      ...fields,
+      lastBest: null,
+      lastPrice: null,
+      baseline: null,
+      lastAlert: null,
+      lastScanAt: null,
+    });
+    return;
+  }
   await updateDoc(doc(db, 'routes', id), resetBest ? { ...fields, lastBest: null } : fields);
 }
 
@@ -104,11 +127,6 @@ export async function setRouteActive(id, active) {
 }
 
 export async function deleteRoute(id) {
-  const snaps = await getDocs(collection(db, 'routes', id, 'snapshots'));
-  for (let i = 0; i < snaps.docs.length; i += 400) {
-    const batch = writeBatch(db);
-    snaps.docs.slice(i, i + 400).forEach((d) => batch.delete(d.ref));
-    await batch.commit();
-  }
+  await deleteSnapshots(id);
   await deleteDoc(doc(db, 'routes', id));
 }

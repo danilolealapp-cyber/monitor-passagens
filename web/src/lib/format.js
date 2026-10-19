@@ -102,4 +102,8 @@ export const toneDot = {
   waiting: 'bg-muted/50',
 };
 
+// Tipo de viagem da rota (rotas antigas, sem o campo, são ida e volta)
+export const isOneWay = (r) => r?.tripType === 'oneway';
+export const tripLabel = (r) => (isOneWay(r) ? 'Só ida' : 'Ida e volta');
+
 export const stopsLabel = (n) => (n === 0 ? 'voo direto' : n === 1 ? '1 conexão' : `${n} conexões`);

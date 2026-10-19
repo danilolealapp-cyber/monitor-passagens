@@ -179,7 +179,7 @@ export default function Dashboard({ user, onSignOut }) {
       </main>
 
       <footer className="mx-auto max-w-6xl px-4 pt-4 pb-10 text-xs text-muted sm:px-6">
-        Preços do Google Flights para 1 adulto, ida e volta, classe econômica. Podem mudar a qualquer momento: confira antes
+        Preços do Google Flights para 1 adulto, classe econômica. Podem mudar a qualquer momento: confira antes
         de comprar.
       </footer>
 

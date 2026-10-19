@@ -40,7 +40,9 @@ export default function AlertsList({ routes }) {
                 </p>
                 {a.offer && (
                   <p className="tnum mt-1 text-sm text-muted">
-                    {dayMonth(a.offer.departDate)} a {dayMonth(a.offer.returnDate)}
+                    {a.offer.returnDate
+                      ? `Ida e volta, ${dayMonth(a.offer.departDate)} a ${dayMonth(a.offer.returnDate)}`
+                      : `Só ida, ${dayMonth(a.offer.departDate)}`}
                     {a.offer.link && (
                       <>
                         {', '}

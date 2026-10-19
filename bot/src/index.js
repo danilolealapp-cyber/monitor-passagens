@@ -94,7 +94,8 @@ async function handleMessage(env, message) {
       const lines = routes.map(
         (r) =>
           `${r.active ? '🟢' : '⏸'} <b>${routeLabel(r)}</b>\n` +
-          `   Ida entre ${dayMonth(r.departFrom)} e ${dayMonth(r.departTo)}, ${r.minNights} a ${r.maxNights} noites\n` +
+          `   Ida entre ${dayMonth(r.departFrom)} e ${dayMonth(r.departTo)}` +
+          (r.tripType === 'oneway' ? ', sem volta\n' : `, ${r.minNights} a ${r.maxNights} noites\n`) +
           `   Agora: ${brl(r.lastPrice)}, alerta em −${Math.round((r.alertThreshold ?? 0.3) * 100)}%`,
       );
       return sendHtml(env, chatId, `🗺 <b>Suas rotas</b>\n\n${lines.join('\n\n')}`);

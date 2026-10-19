@@ -13,7 +13,17 @@ export const dayMonth = (iso) => {
 export const escapeHtml = (text) =>
   String(text ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-export const routeLabel = (r) => escapeHtml(`${r.origin} → ${r.destination}${r.name ? ` (${r.name})` : ''}`);
+// Rotas antigas, sem o campo tripType, são ida e volta
+export const tripLabel = (r) => (r.tripType === 'oneway' ? 'só ida' : 'ida e volta');
+
+export const routeLabel = (r) =>
+  escapeHtml(`${r.origin} → ${r.destination}${r.name ? ` (${r.name})` : ''}, ${tripLabel(r)}`);
+
+// "ida 7 mar, volta 19 mar (12 noites)" ou "ida 7 mar (só ida)"
+export const datesLabel = (o) =>
+  o.returnDate
+    ? `ida ${dayMonth(o.departDate)}, volta ${dayMonth(o.returnDate)} (${o.nights} noites)`
+    : `ida ${dayMonth(o.departDate)} (só ida)`;
 
 export const stopsLabel = (n) => (n === 0 ? 'direto' : n === 1 ? '1 conexão' : `${n} conexões`);
 
@@ -46,7 +56,7 @@ export function reportText(routes) {
     const b = r.lastBest;
     const lines = [`✈️ <b>${routeLabel(r)}</b>`, `💰 <b>${brl(r.lastPrice)}</b>`];
     if (b) {
-      lines.push(`🗓 ${dayMonth(b.departDate)} → ${dayMonth(b.returnDate)} (${b.nights} noites), ${escapeHtml(b.airline ?? '?')}, ${stopsLabel(b.transfers ?? 0)}`);
+      lines.push(`🗓 ${datesLabel(b)}, ${escapeHtml(b.airline ?? '?')}, ${stopsLabel(b.transfers ?? 0)}`);
     }
     lines.push(trend(r));
     if (b?.link) lines.push(`🔗 <a href="${escapeHtml(b.link)}">Ver voos</a>`);

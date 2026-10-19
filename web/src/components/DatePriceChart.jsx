@@ -25,7 +25,9 @@ function DateTooltip({ active, payload }) {
     <div className="rounded-lg border border-line bg-surface px-3 py-2 text-sm shadow-lg">
       <p className="tnum font-semibold">{brl(o.price)}</p>
       <p className="text-xs text-muted">
-        Ida {dayMonth(o.departDate)}, volta {dayMonth(o.returnDate)} ({o.nights} noites)
+        {o.returnDate
+          ? `Ida ${dayMonth(o.departDate)}, volta ${dayMonth(o.returnDate)} (${o.nights} noites)`
+          : `Ida ${dayMonth(o.departDate)}, só ida`}
       </p>
       <p className="text-xs text-muted">{[o.airline, o.transfers != null ? stopsLabel(o.transfers) : null].filter(Boolean).join(', ')}</p>
       {o.link && <p className="mt-1 text-xs font-semibold">Clique para ver os voos</p>}
