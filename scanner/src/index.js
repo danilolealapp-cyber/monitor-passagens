@@ -11,7 +11,7 @@ const HISTORY_DAYS = 30;
 const DEFAULT_THRESHOLD = 0.3;
 const sendReport = process.env.SEND_REPORT !== 'false';
 
-const routeLabel = (r) => escapeHtml(r.name || `${r.origin} → ${r.destination}`);
+const routeLabel = (r) => escapeHtml(`${r.origin} → ${r.destination}${r.name ? ` (${r.name})` : ''}`);
 
 function offerLine(o) {
   const stops = o.transfers === 0 ? 'direto' : `${o.transfers} conexão(ões)`;

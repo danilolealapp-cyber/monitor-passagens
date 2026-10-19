@@ -31,7 +31,7 @@ export default function Login({ notice, disabled = false }) {
           Monitor de passagens
         </h1>
         <p className="mt-4 max-w-sm text-lg text-sky-muted">
-          Preços saindo de Brasília, conferidos três vezes por dia. Você recebe um aviso quando cair de verdade.
+          Preços das suas rotas conferidos três vezes por dia. Você recebe um aviso quando cair de verdade.
         </p>
 
         <button

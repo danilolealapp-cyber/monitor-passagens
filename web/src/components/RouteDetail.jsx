@@ -34,10 +34,10 @@ export default function RouteDetail({ route, onEdit }) {
       <div className="mt-6 flex flex-wrap items-end justify-between gap-6">
         <div>
           <h2 className="text-5xl font-extrabold tracking-tight sm:text-6xl">
-            BSB <span className="text-muted">para</span> {route.destination}
+            {route.origin ?? 'BSB'} <span className="text-muted">para</span> {route.destination}
           </h2>
           <p className="mt-2 text-lg text-muted">
-            {city}
+            Saindo de {route.originName ?? 'Brasília'} para {city}
             {route.country ? `, ${route.country}` : ''}. Ida entre {longDate(route.departFrom)} e {longDate(route.departTo)}, de {route.minNights} a{' '}
             {route.maxNights} noites.
           </p>

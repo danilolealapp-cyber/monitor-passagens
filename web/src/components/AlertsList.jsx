@@ -31,7 +31,9 @@ export default function AlertsList({ routes }) {
             return (
               <li key={a.id} className="rounded-xl border-l-4 border-deal bg-raised px-4 py-3">
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="font-bold">BSB para {route?.destination ?? '?'}</span>
+                  <span className="font-bold">
+                    {route ? `${route.origin ?? 'BSB'} para ${route.destination}` : 'Rota excluída'}
+                  </span>
                   <span className="text-xs text-muted">{timeAgo(a.createdAt?.toDate?.())}</span>
                 </div>
                 <p className="tnum mt-1">

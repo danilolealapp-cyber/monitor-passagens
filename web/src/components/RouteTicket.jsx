@@ -28,7 +28,7 @@ export default function RouteTicket({ route }) {
       {/* Canhoto */}
       <div className="flex w-28 shrink-0 flex-col bg-stub p-4 text-sky-ink sm:w-44 sm:p-5">
         <div className="flex items-center gap-1.5 text-xs font-semibold text-sky-muted">
-          BSB <Plane className="size-3.5 text-ipe" aria-hidden="true" />
+          {route.origin ?? 'BSB'} <Plane className="size-3.5 text-ipe" aria-hidden="true" />
         </div>
         <p className="mt-2 text-4xl leading-none font-extrabold tracking-tight text-ipe sm:text-5xl">{route.destination}</p>
         <p className="mt-2 truncate text-sm font-semibold">{city}</p>

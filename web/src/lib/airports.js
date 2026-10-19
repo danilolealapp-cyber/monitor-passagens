@@ -34,12 +34,12 @@ export function loadAirports() {
 }
 
 // Busca por código, cidade (sem precisar de acento), país ou nome do aeroporto.
-export function searchAirports(airports, query, limit = 8) {
+export function searchAirports(airports, query, { limit = 8, exclude } = {}) {
   const q = normalize(query.trim());
   if (!q) return [];
   const scored = [];
   for (const a of airports) {
-    if (a.code === 'BSB') continue;
+    if (a.code === exclude) continue;
     let score;
     if (a.code.toLowerCase() === q) score = 100;
     else if (a.cityKey.startsWith(q)) score = 50;

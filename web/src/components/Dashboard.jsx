@@ -74,6 +74,10 @@ export default function Dashboard({ user, onSignOut }) {
   const canAdd = activeCount < MAX_ACTIVE_ROUTES;
   const openRoute = routes.find((r) => r.id === openId);
 
+  // "Saindo de Brasília" quando todas as rotas saem da mesma cidade
+  const origins = [...new Set(routes.map((r) => r.originName ?? 'Brasília'))];
+  const headline = origins.length > 1 ? 'Suas rotas' : `Saindo de ${origins[0] ?? 'Brasília'}`;
+
   if (error?.code === 'permission-denied') {
     return (
       <main className="grid min-h-dvh place-items-center bg-sky px-6 text-sky-ink">
@@ -116,7 +120,7 @@ export default function Dashboard({ user, onSignOut }) {
 
           <div className="mt-8 flex flex-wrap items-end justify-between gap-x-6 gap-y-5">
             <div>
-              <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Saindo de Brasília</h1>
+              <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{headline}</h1>
               <p className="mt-1.5 text-sky-muted">
                 {activeCount} de {MAX_ACTIVE_ROUTES} rotas monitoradas, preços conferidos 3 vezes por dia.
               </p>

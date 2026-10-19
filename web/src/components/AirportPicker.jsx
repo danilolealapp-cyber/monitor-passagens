@@ -3,7 +3,7 @@ import { Search } from 'lucide-react';
 import { airportLabel, loadAirports, searchAirports } from '../lib/airports';
 
 // Campo de destino com busca: digite cidade, país ou código do aeroporto.
-export default function AirportPicker({ id, value, onSelect }) {
+export default function AirportPicker({ id, value, exclude, onSelect }) {
   const listId = useId();
   const inputRef = useRef(null);
   const [airports, setAirports] = useState(null);
@@ -25,7 +25,10 @@ export default function AirportPicker({ id, value, onSelect }) {
     if (selected && !open) setQuery(airportLabel(selected));
   }, [selected, open]);
 
-  const results = useMemo(() => (airports && open ? searchAirports(airports, query) : []), [airports, query, open]);
+  const results = useMemo(
+    () => (airports && open ? searchAirports(airports, query, { exclude }) : []),
+    [airports, query, open, exclude],
+  );
 
   function choose(airport) {
     onSelect(airport);
@@ -63,7 +66,7 @@ export default function AirportPicker({ id, value, onSelect }) {
         aria-autocomplete="list"
         aria-activedescendant={open && results[active] ? `${listId}-${results[active].code}` : undefined}
         value={query}
-        placeholder={airports ? 'Cidade, país ou código (ex.: Lisboa)' : 'Carregando aeroportos…'}
+        placeholder={airports ? 'Cidade, país ou código' : 'Carregando aeroportos…'}
         autoComplete="off"
         onFocus={(e) => {
           e.target.select();

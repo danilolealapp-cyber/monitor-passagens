@@ -8,8 +8,9 @@ const today = () => new Date().toISOString().slice(0, 10);
 const daysBetween = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / DAY_MS);
 
 function validate(f) {
+  if (!/^[A-Z]{3}$/.test(f.origin)) return 'Escolha a origem na lista de sugestões.';
   if (!/^[A-Z]{3}$/.test(f.destination)) return 'Escolha o destino na lista de sugestões.';
-  if (f.destination === 'BSB') return 'O destino precisa ser diferente de Brasília.';
+  if (f.destination === f.origin) return 'O destino precisa ser diferente da origem.';
   if (!f.departFrom || !f.departTo) return 'Preencha as duas datas.';
   if (f.departTo < today()) return 'O período precisa estar no futuro.';
   if (f.departFrom > f.departTo) return 'A primeira data precisa vir antes da segunda.';
@@ -26,6 +27,8 @@ export default function RouteForm({ route, canActivate, onClose }) {
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [f, setF] = useState(() => ({
+    origin: route?.origin ?? 'BSB',
+    originName: route?.originName ?? 'Brasília',
     destination: route?.destination ?? '',
     name: route?.name ?? '',
     country: route?.country ?? '',
@@ -46,8 +49,9 @@ export default function RouteForm({ route, canActivate, onClose }) {
     setF((prev) => ({ ...prev, [key]: value }));
   };
 
-  const pickAirport = (a) =>
+  const pickDestination = (a) =>
     setF((prev) => ({ ...prev, destination: a.code, name: a.city, country: a.countryName }));
+  const pickOrigin = (a) => setF((prev) => ({ ...prev, origin: a.code, originName: a.city }));
 
   async function submit(e) {
     e.preventDefault();
@@ -56,6 +60,8 @@ export default function RouteForm({ route, canActivate, onClose }) {
     if (!editing && !canActivate) return setError(`Você já tem ${MAX_ACTIVE_ROUTES} rotas ativas. Pause ou exclua uma antes.`);
 
     const fields = {
+      origin: f.origin,
+      originName: f.originName || f.origin,
       destination: f.destination,
       name: f.name || f.destination,
       country: f.country,
@@ -69,7 +75,7 @@ export default function RouteForm({ route, canActivate, onClose }) {
     setSaving(true);
     try {
       if (editing) {
-        const tripChanged = ['destination', 'departFrom', 'departTo', 'minNights', 'maxNights'].some(
+        const tripChanged = ['origin', 'destination', 'departFrom', 'departTo', 'minNights', 'maxNights'].some(
           (k) => fields[k] !== route[k],
         );
         await updateRoute(route.id, fields, { resetBest: tripChanged });
@@ -100,15 +106,25 @@ export default function RouteForm({ route, canActivate, onClose }) {
             <X className="size-5" aria-hidden="true" />
           </button>
         </div>
-        <p className="mt-1 text-sm text-muted">Saindo de Brasília (BSB), ida e volta.</p>
+        <p className="mt-1 text-sm text-muted">Passagem de ida e volta, 1 adulto, classe econômica.</p>
 
         <div className="mt-6 space-y-5">
-          <div>
-            <label htmlFor="destination" className={label}>
-              Destino
-            </label>
-            <div className="mt-1.5">
-              <AirportPicker id="destination" value={f.destination} onSelect={pickAirport} />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label htmlFor="origin" className={label}>
+                Saindo de
+              </label>
+              <div className="mt-1.5">
+                <AirportPicker id="origin" value={f.origin} exclude={f.destination} onSelect={pickOrigin} />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="destination" className={label}>
+                Indo para
+              </label>
+              <div className="mt-1.5">
+                <AirportPicker id="destination" value={f.destination} exclude={f.origin} onSelect={pickDestination} />
+              </div>
             </div>
           </div>
 
