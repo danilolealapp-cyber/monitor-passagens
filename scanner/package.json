@@ -1,0 +1,17 @@
+{
+  "name": "passagens-scanner",
+  "private": true,
+  "type": "module",
+  "description": "Varredura de passagens aéreas: busca preços, salva no Firebase e avisa no Telegram.",
+  "engines": {
+    "node": ">=22.9"
+  },
+  "scripts": {
+    "scan": "node --env-file-if-exists=.env src/index.js",
+    "add-route": "node --env-file-if-exists=.env src/add-route.js",
+    "telegram-id": "node --env-file-if-exists=.env src/telegram-id.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0"
+  }
+}

@@ -1,0 +1,42 @@
+name: Varredura de passagens
+
+on:
+  schedule:
+    # Horário do GitHub é UTC. 10h, 16h e 23h UTC = 07h, 13h e 20h em Brasília.
+    - cron: '0 10,16,23 * * *'
+  workflow_dispatch: # permite rodar manualmente pelo site do GitHub
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: scanner
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: scanner/package-lock.json
+      - run: npm ci
+      - run: npm run scan
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TRAVELPAYOUTS_TOKEN: ${{ secrets.TRAVELPAYOUTS_TOKEN }}
+
+  # O GitHub pausa agendamentos após 60 dias sem atividade no repositório.
+  # Este passo mantém o agendamento ligado.
+  keepalive:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gautamkrishnar/keepalive-workflow@v2
